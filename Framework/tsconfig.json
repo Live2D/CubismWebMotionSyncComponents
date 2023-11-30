@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    "target": "es5",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "forceConsistentCasingInFileNames": true,
+    "outDir": "./dist",
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "emitDecoratorMetadata": true,
+    "noImplicitAny": true,
+    "useUnknownInCatchVariables": true,
+    "baseUrl": "./",
+    "paths": {
+      "@framework/*": ["../../CubismSdkForWeb/Framework/src/*"]
+    },
+  },
+  "include": [
+    "src/**/*.ts",
+    "../Core/**/*.ts",
+    "../../CubismSdkForWeb/Core/*.ts",
+    "../../CubismSdkForWeb/Framework/src/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
+}

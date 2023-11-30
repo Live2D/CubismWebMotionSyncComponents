@@ -1,0 +1,35 @@
+{
+  "compilerOptions": {
+    "target": "es5",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "forceConsistentCasingInFileNames": true,
+    "outDir": "./dist",
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "emitDecoratorMetadata": true,
+    "noImplicitAny": true,
+    "useUnknownInCatchVariables": true,
+    "baseUrl": "./",
+    "paths": {
+      "@framework/*": ["../../../../CubismSdkForWeb/Framework/src/*"],
+      "@cubismsdksamples/*": ["../../../../CubismSdkForWeb/Samples/TypeScript/Demo/src/*"],
+      "@motionsyncframework/*": ["../../../Framework/src/*"]
+    },
+  },
+  "include": [
+    "src/**/*.ts",
+    "../../../Core/**/*.ts",
+    "../../../Framework/src/**/*.ts",
+    "../../../../CubismSdkForWeb/Core/*.ts",
+    "../../../../CubismSdkForWeb/Framework/src/**/*.ts",
+    "../../../../CubismSdkForWeb/Samples/TypeScript/Demo/src/**/*.ts",
+    "src/lappaudioworkletprocessor.js"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
+}
