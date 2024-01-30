@@ -312,12 +312,6 @@ function onClickBegan(e: MouseEvent): void {
   const posY: number = e.pageY;
 
   LAppMotionSyncDelegate.getInstance()._view.onTouchesBegan(posX, posY);
-
-  // HACK: On Safari.
-  if (navigator.userAgent.includes("AppleWebKit")) {
-    const audio = new Audio();
-    audio.play();
-  }
 }
 
 /**

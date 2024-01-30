@@ -7,6 +7,10 @@
 
 import { csmVector, iterator } from '@framework/type/csmvector';
 import * as LAppMotionSyncDefine from './lappmotionsyncdefine';
+import { CubismMotionSync } from '@motionsyncframework/live2dcubismmotionsync';
+import { LAppMotionSyncModel } from './lappmotionsyncmodel';
+import { LAppWavFileHandler } from '@cubismsdksamples/lappwavfilehandler';
+import { CubismLogError } from '@framework/utils/cubismdebug';
 
 /**
  * WorkletProcessorモジュール用の型定義
@@ -37,17 +41,17 @@ export class LAppMotionSyncAudioManager {
       ite.notEqual(this._audios.end());
       ite.preIncrement()
     ) {
-      if(!ite.ptr()){
+      if (!ite.ptr()) {
         continue;
       }
 
-      if(ite.ptr().workletNode){
+      if (ite.ptr().workletNode) {
         ite.ptr().workletNode.disconnect();
       }
-      if(ite.ptr().source){
+      if (ite.ptr().source) {
         ite.ptr().source.disconnect();
       }
-      if(ite.ptr().audioContext){
+      if (ite.ptr().audioContext) {
         ite.ptr().audioContext.close();
       }
     }
@@ -64,8 +68,15 @@ export class LAppMotionSyncAudioManager {
   public createAudioFromFile(
     fileName: string,
     index: number,
+    model: LAppMotionSyncModel,
+    motionSync: CubismMotionSync,
     audioContext: AudioContext,
-    callback: (audioInfo: AudioInfo, callbackIndex: number) => void
+    callback: (
+      audioInfo: AudioInfo,
+      callbackIndex: number,
+      model: LAppMotionSyncModel,
+      motionSync: CubismMotionSync
+    ) => void
   ): void {
     if (this._audios && this._audios.at(index) != null) {
       // search loaded audio already
@@ -87,7 +98,7 @@ export class LAppMotionSyncAudioManager {
             .ptr()
             .audio.addEventListener(
               'load',
-              (): void => callback(ite.ptr(), index),
+              (): void => callback(ite.ptr(), index, model, motionSync),
               {
                 passive: true
               }
@@ -136,16 +147,36 @@ export class LAppMotionSyncAudioManager {
           audioInfo.source = source;
           audioInfo.workletNode = audioWorkletNode;
           audioInfo.isPlay = false;
-          //this._audios.pushBack(audioInfo);
-          this._audios.set(index, audioInfo);
+          audioInfo.previousSamplePosition = 0;
+          audioInfo.audioElapsedTime = 0;
 
-          callback(audioInfo, index);
+          // WavFileHandlerの作成
+          const wavhandler = new LAppWavFileHandler();
+
+          // Wavファイルの読み込み
+          wavhandler.loadWavFile(fileName).then(result => {
+            if (!result) {
+              CubismLogError(
+                "wav file can't load. File name: " + fileName + '.'
+              );
+              return;
+            }
+            audioInfo.wavhandler = wavhandler;
+            audioInfo.audioSamples = audioInfo.wavhandler.getPcmDataChannel(0);
+            this._audios.set(index, audioInfo);
+
+            callback(audioInfo, index, model, motionSync);
+          });
         }
         audio.src = fileName;
 
         // 再生終了時に再生されていないとマークする。
         audio.onended = function () {
           audioInfo.isPlay = false;
+
+          // 再生終了時に再生時間をリセットする。
+          audioInfo.previousSamplePosition = 0;
+          audioInfo.audioElapsedTime = 0;
         };
       });
   }
@@ -218,7 +249,7 @@ export class LAppMotionSyncAudioManager {
         continue;
       }
 
-      return this._audios.at(i).isPlay;
+      return this.isPlayByIndex(i);
     }
 
     return false;
@@ -235,8 +266,7 @@ export class LAppMotionSyncAudioManager {
         continue;
       }
 
-      this._audios.at(i).audio.play();
-      this._audios.at(i).isPlay = true;
+      this.playByIndex(i);
       break;
     }
   }
@@ -252,8 +282,7 @@ export class LAppMotionSyncAudioManager {
         continue;
       }
 
-      this._audios.at(i).audio.load();
-      this._audios.at(i).isPlay = false;
+      this.stopByIndex(i);
       break;
     }
   }
@@ -269,8 +298,7 @@ export class LAppMotionSyncAudioManager {
         continue;
       }
 
-      this._audios.at(i).audio.pause();
-      this._audios.at(i).isPlay = false;
+      this.pauseByIndex(i);
       break;
     }
   }
@@ -280,13 +308,8 @@ export class LAppMotionSyncAudioManager {
    *
    * @param index 音声のインデックス
    * @param buffer データを入れるバッファ
-   * @param updateSizes 更新サイズの配列
    */
-  public setOnMessageByIndex(
-    index: number,
-    buffer: csmVector<number>,
-    updateSizes: csmVector<number>
-  ): void {
+  public setOnMessageByIndex(index: number, buffer: csmVector<number>): void {
     this._audios.at(index).workletNode.port.onmessage = e => {
       if (!this.isPlayByIndex(index)) {
         return;
@@ -297,12 +320,9 @@ export class LAppMotionSyncAudioManager {
 
       // WorkletProcessorモジュールからデータを取得
       if (data.eventType === 'data') {
-        let newValue = updateSizes.at(index);
-        data.audioBuffer.forEach((element: number) => {
-          buffer.pushBack(element);
-          newValue++;
-        });
-        updateSizes.set(index, newValue);
+        if (!data.audioBuffer) {
+          return;
+        }
       }
     };
   }
@@ -314,11 +334,45 @@ export class LAppMotionSyncAudioManager {
    * @returns 指定したインデックスの音声が再生中か？
    */
   public isPlayByIndex(index: number): boolean {
-    if (this._audios == null || !(index < this._audios.getSize()) || this._audios.at(index) == null) {
+    if (
+      this._audios == null ||
+      !(index < this._audios.getSize()) ||
+      this._audios.at(index) == null
+    ) {
       return false;
     }
 
     return this._audios.at(index).isPlay;
+  }
+
+  /**
+   * 登録済みのソースから音源ノードを作り直す。
+   *
+   * @param audioInfo 作り直す音源の情報を持った音声情報構造体
+   */
+  public remakeAudioElementNode(audioInfo: AudioInfo): void {
+    // 音声情報構造体が空か、空文字が入ってきたら何もしない。
+    if (!audioInfo || !audioInfo.audio.src) {
+      return;
+    }
+
+    const audio = new Audio(audioInfo.audio.src);
+    // 埋め込み音声要素の初期設定
+    audio.preload = 'auto';
+
+    // 現在のノードを切断
+    audioInfo.source.disconnect();
+
+    // 音源ノードの作成
+    const source = audioInfo.audioContext.createMediaElementSource(audio);
+
+    // 各ノードを接続する。
+    source.connect(audioInfo.workletNode);
+    audioInfo.audio = audio;
+    audioInfo.source = source;
+
+    // 音声をロード
+    audioInfo.audio.load();
   }
 
   /**
@@ -331,8 +385,30 @@ export class LAppMotionSyncAudioManager {
       return;
     }
 
-    this._audios.at(index).audio.play();
-    this._audios.at(index).isPlay = true;
+    const audioInfo = this._audios.at(index);
+
+    // iOS AppleWebkitのみ再生前に作り直す必要がある。
+    if (
+      navigator.userAgent.includes('AppleWebKit') &&
+      navigator.userAgent.includes('Mobile')
+    ) {
+      // 音源ノードの作り直し
+      this.remakeAudioElementNode(audioInfo);
+    }
+
+    audioInfo.audio.play().then(() => {
+      audioInfo.isPlay = true;
+
+      // 現在フレームの時間を秒単位で取得
+      // NOTE: ブラウザやブラウザ側の設定により、performance.now() の精度が異なる可能性に注意
+      const currentAudioTime = performance.now() / 1000; // convert to seconds.
+
+      // 前回フレームの時間が現在時刻よりも前だった場合は同時刻として扱う
+      if (currentAudioTime < audioInfo.audioContextPreviousTime) {
+        audioInfo.audioContextPreviousTime = currentAudioTime;
+      }
+      audioInfo.audioContextPreviousTime = currentAudioTime;
+    });
   }
 
   /**
@@ -345,8 +421,13 @@ export class LAppMotionSyncAudioManager {
       return;
     }
 
-    this._audios.at(index).audio.load();
-    this._audios.at(index).isPlay = false;
+    const audioInfo = this._audios.at(index);
+    audioInfo.audio.load();
+    audioInfo.isPlay = false;
+
+    // 再生位置をリセット
+    audioInfo.previousSamplePosition = 0;
+    audioInfo.audioElapsedTime = 0;
   }
 
   /**
@@ -359,11 +440,13 @@ export class LAppMotionSyncAudioManager {
       return;
     }
 
-    this._audios.at(index).audio.pause();
-    this._audios.at(index).isPlay = false;
+    const audioInfo = this._audios.at(index);
+    audioInfo.audio.pause();
+    audioInfo.isPlay = false;
   }
 
   _audios: csmVector<AudioInfo>;
+  _eBuffers: number[] = [];
 }
 
 /**
@@ -376,4 +459,9 @@ export class AudioInfo {
   workletNode: AudioWorkletNode = null; // リアルタイム時間領域用のノード
   filePath: string; // ファイル名
   isPlay: boolean; // 再生中か？
+  audioContextPreviousTime: number = 0; // 音声コンテキストを最後に呼んだ時間
+  wavhandler: LAppWavFileHandler = null; // WavFileHandlerのインスタンス
+  audioSamples: Float32Array = null; // 音声データ
+  audioElapsedTime: number = 0; // 再生した時間
+  previousSamplePosition: number = 0; // 前回のサンプル数
 }

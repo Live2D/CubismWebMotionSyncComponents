@@ -21,7 +21,7 @@ import { CubismMotionSyncEngineAnalysisResult } from './cubismmotionsyncenginean
 import { CubismMotionSyncEngineController } from './cubismmotionsyncenginecontroller';
 import { CubismMotionSyncEngineCri } from './cubismmotionsyncenginecri';
 import { CubismMotionSyncProcessorCRI } from './cubismmotionsyncprocessorcri';
-import { EngineType } from './cubismmotionsyncutil';
+import { EngineType, MotionSyncUtil } from './cubismmotionsyncutil';
 import { ICubismMotionSyncEngine } from './icubismmotionsyncengine';
 import { ICubismMotionSyncProcessor } from './icubismmotionsyncprocessor';
 
@@ -247,13 +247,17 @@ export class CubismMotionSync {
     instance = null;
   }
 
-  public setSoundBuffer(processIndex: number, buffer: csmVector<number>) {
+  public setSoundBuffer(
+    processIndex: number,
+    buffer: csmVector<number>,
+    startIndex: number
+  ): void {
     if (!CubismMotionSync.isInitialized()) {
       return;
     }
     if (processIndex < this._processorInfoList.getSize()) {
       this._processorInfoList.at(processIndex)._sampleBuffer = buffer;
-      this._processorInfoList.at(processIndex)._sampleBufferIndex = 0;
+      this._processorInfoList.at(processIndex)._sampleBufferIndex = startIndex;
     }
   }
 
@@ -287,6 +291,8 @@ export class CubismMotionSync {
       // Check each time assuming it may have been updated.
       const fps: number = this._processorInfoList.at(processIndex)._sampleRate;
       const processorDeltaTime: number = 1.0 / fps;
+
+      this._processorInfoList.at(processIndex)._lastTotalProcessedCount = 0;
 
       // If the specified frame time is not reached, no analysis is performed.
       if (
@@ -325,9 +331,10 @@ export class CubismMotionSync {
       this.analyze(model, processIndex);
 
       // Reset counter.
-      this._processorInfoList.at(processIndex)._currentRemainTime =
-        this._processorInfoList.at(processIndex)._currentRemainTime %
-        processorDeltaTime;
+      this._processorInfoList.at(processIndex)._currentRemainTime = MotionSyncUtil.fmod(
+        this._processorInfoList.at(processIndex)._currentRemainTime,
+        processorDeltaTime
+      );
 
       for (
         let targetIndex = 0;
@@ -384,10 +391,10 @@ export class CubismMotionSync {
     const audioLevelEffectRatio: number =
       this._processorInfoList.at(processIndex)._audioLevelEffectRatio;
 
-    this._processorInfoList.at(processIndex)._lastTotalProcessedCount = 0;
+    const samplesSize = samples.getSize();
+    let requireSampleCount = processor.getRequireSampleCount();
 
-    do {
-      const samplesSize = samples.getSize();
+    for (let i = 0; i < samplesSize; i += requireSampleCount) {
       if (
         samplesSize == 0 ||
         samplesSize <= beginIndex ||
@@ -470,7 +477,9 @@ export class CubismMotionSync {
           .at(processIndex)
           ._lastDampedList.set(targetIndex, cacheValue);
       }
-    } while (analysisResult != null);
+
+      requireSampleCount = processor.getRequireSampleCount();
+    }
   }
 
   public setBlendRatio(processIndex: number, blendRatio: number): void {

@@ -18,6 +18,19 @@ export enum EngineType {
   EngineType_Unknown
 }
 
+export class MotionSyncUtil {
+  /**
+   * 浮動小数点の余りを求める。
+   *
+   * @param x 被除数（割られる値）
+   * @param y 除数（割る値）
+   * @returns 余り
+   */
+  public static fmod(x: number, y: number) {
+    return Number((x - Math.floor(x / y) * y).toPrecision(8));
+  }
+}
+
 export class MappingInfoListMapper {
   // デストラクタ
   public release(): void {
@@ -69,12 +82,13 @@ export class MappingInfoListMapper {
             infoElementIndex * Float32Array.BYTES_PER_ELEMENT,
             this._infoBufferList.at(infoListIndex)[infoElementIndex]
           );
+        } else {
+          ToPointer.AddValuePtrInt32(
+            mappingInfoListPtr,
+            infoElementIndex * Float32Array.BYTES_PER_ELEMENT,
+            this._infoBufferList.at(infoListIndex)[infoElementIndex]
+          );
         }
-        ToPointer.AddValuePtrInt32(
-          mappingInfoListPtr,
-          infoElementIndex * Float32Array.BYTES_PER_ELEMENT,
-          this._infoBufferList.at(infoListIndex)[infoElementIndex]
-        );
       }
       // 利用したバイト数分ポインタを進める
       mappingInfoListPtr +=
@@ -144,6 +158,8 @@ export class MotionSyncContext {
 import * as $ from './cubismmotionsyncutil';
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace Live2DCubismMotionSyncFramework {
+  export const MotionSyncUtil = $.MotionSyncUtil;
+  export type MotionSyncUtil = $.MotionSyncUtil;
   export const MotionSyncContext = $.MotionSyncContext;
   export type MotionSyncContext = $.MotionSyncContext;
   export const MappingInfoListMapper = $.MappingInfoListMapper;

@@ -37,9 +37,17 @@ export class CubismModelMotionSyncSettingJson extends CubismModelSettingJson {
         listIndex < this.getMotionCount(groupName);
         listIndex++
       ) {
-        list.pushBack(
-          new csmString(this.getMotionSoundFileName(groupName, listIndex))
+        const fileName: string = this.getMotionSoundFileName(
+          groupName,
+          listIndex
         );
+
+        // ファイル名が空であれば無視する。
+        if (!fileName || fileName.length < 1) {
+          continue;
+        }
+
+        list.pushBack(new csmString(fileName));
       }
     }
 
