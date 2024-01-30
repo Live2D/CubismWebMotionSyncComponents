@@ -100,26 +100,29 @@ Samplesの実行を行う場合は、追加で以下のファイル内の該当�
 
 #### launch.json の作成
 
- **Cubism SDK for Web 及び本プラグインを配置したディレクトリ** に `.vscode` ディレクトリを作成し、Cubism SDK for Webのルートディレクトリから `launch.json` をコピーします。
+ **Cubism SDK for Web 及び本プラグインを配置したディレクトリ** に `.vscode` ディレクトリを作成し、Cubism SDK for Webの`.vscode` ディレクトリから `launch.json` をコピーします。
 コピーが完了したら、`url` キーを以下のように修正します。 `CubismWebMotionSyncComponents` となっている箇所は、本プラグインのルートディレクトリの名称に書き換えてください。
 
 ```
-"url": "http://localhost:5000/CubismWebMotionSyncComponents/Samples/TypeScript/Demo/"
+"url": "https://localhost:5000/CubismWebMotionSyncComponents/Samples/TypeScript/Demo/"
 ```
 
 #### 実行
 
 コマンドパレット（*View > Command Palette...*）で `>Tasks: Run Task` を入力することで、タスク一覧が表示されます。
 
-1. タスク一覧から `npm: install - Samples/TypeScript/Demo` を選択して依存パッケージのダウンロードを行います
-1. タスク一覧から `npm: build - Samples/TypeScript/Demo` を選択してサンプルデモのビルドを行います
-1. タスク一覧から `npm: serve - Samples/TypeScript/Demo` を選択して動作確認用の簡易サーバを起動します
-1. ブラウザの URL 欄に `http://localhost:5000/CubismWebMotionSyncComponents/Samples/TypeScript/Demo/` と入力してアクセスします（`CubismWebMotionSyncComponents` となっている箇所は変更している場合、本プラグインのルートディレクトリの名称）
-1. コマンドパレットから `>Tasks: Terminate Task` を入力して `npm: serve` を選択すると簡易サーバが終了します
+1. タスク一覧から `npm: install - CubismWebMotionSyncComponents/Samples/TypeScript/Demo` を選択して依存パッケージのダウンロードを行います
+1. タスク一覧から `npm: build - CubismWebMotionSyncComponents/Samples/TypeScript/Demo` を選択してサンプルデモのビルドを行います
+1. タスク一覧から `npm: create-ca - CubismWebMotionSyncComponents/Samples/TypeScript/Demo` を選択して開発用の認証局情報を作成します
+1. タスク一覧から `npm: create-cert - CubismWebMotionSyncComponents/Samples/TypeScript/Demo` を選択して開発用の証明書情報を作成します
+1. タスク一覧から `npm: serve-https - CubismWebMotionSyncComponents/Samples/TypeScript/Demo` を選択して動作確認用の簡易サーバを起動します
+1. ブラウザの URL 欄に `https://localhost:5000/CubismWebMotionSyncComponents/Samples/TypeScript/Demo/` と入力してアクセスします 
+1. コマンドパレットから `>Tasks: Terminate Task` を入力して `npm: serve-https` を選択すると簡易サーバが終了します
+
+NOTE: `CubismWebMotionSyncComponents` となっている箇所は変更している場合、本プラグインのルートディレクトリの名称
+NOTE: 本サンプルプロジェクトでは、`mkcert` パッケージを利用して自己署名証明書を発行しています。本サンプルプロジェクトを利用した場合に作成される自己署名証明書は一部ブラウザなどでは警告が出ることがあり、開発環境以外での利用は想定していません。
 
 その他のタスクに関してはサンプルプロジェクトの [README.md](Samples/TypeScript/README.ja.md) を参照ください。
-
-NOTE: デバック用の設定は、`.vscode/tasks.json` に記述しています。 -->
 
 ### プロジェクトのデバック
 
@@ -144,20 +147,30 @@ NOTE: デバック用の設定は、`.vscode/launch.json` に記述していま�
 
 ### Node.js
 
-* 21.2.0
-* 20.10.0
+* 21.5.0
+* 20.11.0
 
 
 ## 動作確認環境
 
 | プラットフォーム | ブラウザ | バージョン |
 | --- | --- | --- |
-| macOS | Safari | 17.1 |
-| Windows | Google Chrome | 119.0.6045.200 |
-| Windows | Microsoft Edge | 119.0.2151.93 |
-| Windows | Mozilla Firefox | 120.0 |
+| Android | Google Chrome | 120.0.6099.210 |
+| Android | Microsoft Edge | 120.0.2210.115 |
+| Android | Mozilla Firefox | 121.1.0 |
+| iOS / iPadOS | Google Chrome | 120.0.6099.119 |
+| iOS / iPadOS | Microsoft Edge | 120.0.2210.126 |
+| iOS / iPadOS | Mozilla Firefox | 121.2 |
+| iOS / iPadOS | Safari | 17.2 |
+| macOS | Google Chrome | 120.0.6099.216 |
+| macOS | Microsoft Edge | 120.0.2210.121 |
+| macOS | Mozilla Firefox | 121.0.1 |
+| macOS | Safari | 17.2.1 |
+| Windows | Google Chrome | 120.0.6099.217 |
+| Windows | Microsoft Edge | 120.0.2210.121 |
+| Windows | Mozilla Firefox | 121.0.1 |
 
-Note: 動作確認時のサーバの起動は `./Samples/TypeScript/Demo/package.json` の `serve` スクリプトを使用して行っています。
+Note: 動作確認時のサーバの起動は `./Samples/TypeScript/Demo/package.json` の `serve-https` スクリプトを使用して行っています。
 
 
 ## プロジェクトへの貢献

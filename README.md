@@ -100,26 +100,29 @@ If you want to change the directory structure, you can do so by editing the abov
 
 #### Creating launch.json
 
-Create a `.vscode` directory in the **directory where Cubism SDK for Web and this plugin are placed** and copy `launch.json` from the root directory of Cubism SDK for Web.
+Create a `.vscode` directory in the **directory where Cubism SDK for Web and this plugin are placed** and copy `launch.json` from the `.vscode` directory of Cubism SDK for Web.
 Once the copy is complete, modify the `url` key as follows. Replace `CubismWebMotionSyncComponents` with the name of the root directory of this plugin.
 
 ```
-"url": "http://localhost:5000/CubismWebMotionSyncComponents/Samples/TypeScript/Demo/"
+"url": "https://localhost:5000/CubismWebMotionSyncComponents/Samples/TypeScript/Demo/"
 ```
 
 #### Execution
 
 The task list is displayed by entering `>Tasks: Run Task` in the command palette (*View > Command Palette...*).
 
-1. Select `npm: install - Samples/TypeScript/Demo` from the task list to download the dependent package
-1. Select `npm: build - Samples/TypeScript/Demo` from the task list to build the sample demo
-1. Select `npm: serve - Samples/TypeScript/Demo` from the task list to start a simple server for checking the operation
-1. Enter `http://localhost:5000/CubismWebMotionSyncComponents/Samples/TypeScript/Demo/` in the URL field of your browser to access it (Replace `CubismWebMotionSyncComponents` with the name of the root directory for this plugin if changed)
-1. Enter `>Tasks: Terminate Task` from the command palette and select `npm: serve` to terminate the simple server
+1. Select `npm: install - CubismWebMotionSyncComponents/Samples/TypeScript/Demo` from the task list to download the dependent package
+1. Select `npm: build - CubismWebMotionSyncComponents/Samples/TypeScript/Demo` from the task list to build the sample demo
+1. Select `npm: create-ca - CubismWebMotionSyncComponents/Samples/TypeScript/Demo` from the task list to Certificate Authority information for development
+1. Select `npm: create-cert - CubismWebMotionSyncComponents/Samples/TypeScript/Demo` from the task list to certificate information for development
+1. Select `npm: serve-https - CubismWebMotionSyncComponents/Samples/TypeScript/Demo` from the task list to start a simple server for checking the operation
+1. Enter `https://localhost:5000/CubismWebMotionSyncComponents/Samples/TypeScript/Demo/` in the URL field of your browser to access it
+1. Enter `>Tasks: Terminate Task` from the command palette and select `npm: serve-https` to terminate the simple server
+
+NOTE: Replace `CubismWebMotionSyncComponents` with the name of the root directory for this plugin if changed.
+NOTE: This sample project uses the `mkcert` package to issue self-signed certificates. The self-signed certificate issued by this sample project is not intended for use outside of the development environment. It may also cause warnings in some browsers.
 
 For other tasks, please refer to [README.md](Samples/TypeScript/README.md) of the sample project.
-
-NOTE: Settings for debugging are described in `.vscode/tasks.json`.  -->
 
 ### Project debugging
 
@@ -143,20 +146,30 @@ Please refer to [CHANGELOG.md](CHANGELOG.md) for the changelog of this repositor
 
 ### Node.js
 
-* 21.2.0
-* 20.10.0
+* 21.5.0
+* 20.11.0
 
 
 ## Operation environment
 
 | Platform | Browser | Version |
 | --- | --- | --- |
-| macOS | Safari | 17.1 |
-| Windows | Google Chrome | 119.0.6045.200 |
-| Windows | Microsoft Edge | 119.0.2151.93 |
-| Windows | Mozilla Firefox | 120.0 |
+| Android | Google Chrome | 120.0.6099.210 |
+| Android | Microsoft Edge | 120.0.2210.115 |
+| Android | Mozilla Firefox | 121.1.0 |
+| iOS / iPadOS | Google Chrome | 120.0.6099.119 |
+| iOS / iPadOS | Microsoft Edge | 120.0.2210.126 |
+| iOS / iPadOS | Mozilla Firefox | 121.2 |
+| iOS / iPadOS | Safari | 17.2 |
+| macOS | Google Chrome | 120.0.6099.216 |
+| macOS | Microsoft Edge | 120.0.2210.121 |
+| macOS | Mozilla Firefox | 121.0.1 |
+| macOS | Safari | 17.2.1 |
+| Windows | Google Chrome | 120.0.6099.217 |
+| Windows | Microsoft Edge | 120.0.2210.121 |
+| Windows | Mozilla Firefox | 121.0.1 |
 
-Note: You can start the server for operation check by running the `serve` script of `./Samples/TypeScript/Demo/package.json`.
+Note: You can start the server for operation check by running the `serve-https` script of `./Samples/TypeScript/Demo/package.json`.
 
 
 ## Contributing

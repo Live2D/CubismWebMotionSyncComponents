@@ -6,11 +6,12 @@
  */
 
 import { csmVector } from '@framework/type/csmvector';
+import { CubismMotionSync } from '@motionsyncframework/live2dcubismmotionsync';
 import {
   AudioInfo,
   LAppMotionSyncAudioManager
 } from './lappmotionsyncaudiomanager';
-import * as LAppMotionSyncDefine from './lappmotionsyncdefine';
+import { LAppMotionSyncModel } from './lappmotionsyncmodel';
 
 export class LAppPlaySound {
   /**
@@ -18,31 +19,36 @@ export class LAppPlaySound {
    *
    * @param path ファイルパス
    */
-  public loadFile(path: string, index: number): void {
+  public loadFile(
+    path: string,
+    index: number,
+    model: LAppMotionSyncModel,
+    motionSync: CubismMotionSync
+  ): void {
     this._soundBufferContext
       .getAudioManager()
       .createAudioFromFile(
         path,
         index,
+        model,
+        motionSync,
         null,
-        (audioInfo: AudioInfo, index: number): void => {
+        (
+          audioInfo: AudioInfo,
+          index: number,
+          model: LAppMotionSyncModel,
+          motionSync: CubismMotionSync
+        ): void => {
           this._soundBufferContext
             .getBuffers()
-            .set(
-              index,
-              new csmVector<number>()
-            );
-
-          // 前回のサンプルから進んだ数の配列に設定
-          this._soundBufferContext.getUpdateSizes().pushBack(0);
+            .set(index, new csmVector<number>());
 
           // Messege発した時にデータ取って来れるように設定
           this._soundBufferContext
             .getAudioManager()
             .setOnMessageByIndex(
               index,
-              this._soundBufferContext.getBuffers().at(index),
-              this._soundBufferContext.getUpdateSizes()
+              this._soundBufferContext.getBuffers().at(index)
             );
         }
       );
@@ -51,19 +57,7 @@ export class LAppPlaySound {
   /**
    * 更新
    */
-  public update(): void {
-    const audioManager = this._soundBufferContext.getAudioManager();
-    const updateSizes = this._soundBufferContext.getUpdateSizes();
-
-    for (let index = 0; index < audioManager._audios.getSize(); index++) {
-      if (!audioManager.isPlayByIndex(index)) {
-        continue;
-      }
-
-      // 更新されたので要素数をリセット
-      updateSizes.set(index, 0);
-    }
-  }
+  public update(): void {}
 
   /**
    * コンテナの先頭から要素を削除して他の要素をシフトする
@@ -72,7 +66,10 @@ export class LAppPlaySound {
    * @param size 削除する大きさ
    * @returns 変更後のバッファ
    */
-  public spliceBegin(buffer: csmVector<number>, size: number): csmVector<number> {
+  public spliceBegin(
+    buffer: csmVector<number>,
+    size: number
+  ): csmVector<number> {
     if (!buffer?.begin() || buffer?._size <= size) {
       return buffer; // 削除範囲外
     }
@@ -96,9 +93,6 @@ export class LAppPlaySound {
     if (size < buffer.getSize()) {
       // 途中からのバッファにする
       buffer = this.spliceBegin(buffer, size);
-    } else {
-      // バッファの全要素をクリア
-      buffer.clear();
     }
   }
 
@@ -176,7 +170,7 @@ export class LAppPlaySound {
   }
 
   public release() {
-    if(this._soundBufferContext) {
+    if (this._soundBufferContext) {
       this._soundBufferContext.release();
       this._soundBufferContext = void 0;
     }
@@ -194,46 +188,28 @@ export class SoundBufferContext {
     return this._audioManager;
   }
 
-  public getUpdateSizes(): csmVector<number> {
-    return this._updateSizes;
-  }
-
-  public setUpdateSize(index: number, value: number) {
-    this._updateSizes.set(index, value);
-  }
-
   public constructor(
     buffers?: csmVector<csmVector<number>>,
-    audioManager?: LAppMotionSyncAudioManager,
-    updateSizes?: csmVector<number>
+    audioManager?: LAppMotionSyncAudioManager
   ) {
-    this._buffers = buffers
-      ? buffers
-      : new csmVector<csmVector<number>>();
+    this._buffers = buffers ? buffers : new csmVector<csmVector<number>>();
     this._audioManager = audioManager
       ? audioManager
       : new LAppMotionSyncAudioManager();
-    this._updateSizes = updateSizes ? updateSizes : new csmVector<number>();
   }
 
   public release() {
-    if(this._buffers != null){
+    if (this._buffers != null) {
       this._buffers.clear();
       this._buffers = void 0;
     }
 
-    if(this._audioManager != null){
+    if (this._audioManager != null) {
       this._audioManager.release();
       this._audioManager = void 0;
-    }
-
-    if(this._updateSizes != null){
-      this._updateSizes.clear();
-      this._updateSizes = void 0;
     }
   }
 
   private _buffers: csmVector<csmVector<number>>;
   private _audioManager: LAppMotionSyncAudioManager;
-  private _updateSizes: csmVector<number>;
 }

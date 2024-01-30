@@ -4,13 +4,12 @@
 
 # Notices
 
-## [Restrictions] Operation of the Sample (2023-11-30)
+## [Restrictions] Sample operation on iOS (2024-01-30)
 
-We have confirmed that the operation of the sample project using Web Audio API depends on the refresh rate of the screen being displayed.
+We have identified an issue with the sample project, in which the audio may not play properly on iOS devices.
 
-Also, we have not confirmed the operation on iOS and Android.
+This matter will be addressed in a future release.
 
-These issue will be corrected in a future release.
 
 ---
 

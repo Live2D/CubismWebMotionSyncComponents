@@ -15,3 +15,8 @@ temp/
 !/.vscode/launch.json
 !/.vscode/settings.json
 !/.vscode/tasks.json
+
+# Exclude some certificate files.
+*.key
+*.cert
+*.pem

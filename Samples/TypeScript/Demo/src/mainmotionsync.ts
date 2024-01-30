@@ -15,6 +15,18 @@ import { LAppGlManager } from '@cubismsdksamples/lappglmanager';
 window.addEventListener(
   'load',
   (): void => {
+    // 安全なコンテキストかを確認する。
+    // 参考: https://developer.mozilla.org/ja/docs/Web/Security/Secure_Contexts
+    if (!window.isSecureContext) {
+      // 安全なコンテキストではない場合は一部の機能が動作しない可能性をアラートし、リターン。
+      alert('Not a secure context. Some features may not work.');
+
+      // この接続ではAudioWorkletが動作しない旨を表示。
+      document.body.innerHTML =
+        '`AudioWorklet` may not work with this connection.';
+      return;
+    }
+
     // Initialize WebGL and create the application instance
     if (
       !LAppGlManager.getInstance() ||
