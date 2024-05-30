@@ -20,6 +20,8 @@ export enum EngineType {
 
 export class MotionSyncUtil {
   /**
+   * @deprecated 非推奨になりました。代わりにCubismMath.fmodを使用してください。
+   *
    * 浮動小数点の余りを求める。
    *
    * @param x 被除数（割られる値）

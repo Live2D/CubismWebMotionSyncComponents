@@ -11,8 +11,8 @@ TypeScript で実装したアプリケーションのサンプル実装です。
 
 | パッケージ | バージョン |
 | --- | --- |
-| TypeScript | 5.3.3 |
-| Webpack | 5.89.0 |
+| TypeScript | 5.4.3 |
+| Vite | 5.2.7 |
 
 その他のパッケージに関しては、各プロジェクトの `package.json` を確認してください。
 また、その他の開発環境・動作確認環境はトップディレクトリにある [README.md](/README.ja.md) を参照してください。
@@ -20,7 +20,7 @@ TypeScript で実装したアプリケーションのサンプル実装です。
 
 ## タスク一覧
 
-### `npm: start`
+### `npm: start` (`npm: start:microphone`)
 
 開発用のローカルサーバが起動され、プロジェクトの監視ビルドが行われます。
 プロジェクトの変更を行うと自動的に再ビルドが行われ、ブラウザのリロードが発生します。
@@ -29,17 +29,23 @@ TypeScript で実装したアプリケーションのサンプル実装です。
 Visual Studio Code 上で終了する場合は、
 コマンドパレットから `>Tasks: Terminate Task` を入力してタスクを選択します。
 
-### `npm: build`
+*`start:microphone` はマイク入力版となります。
+
+### `npm: build` (`npm: build:microphone`)
 
 `dist` ディレクトリに、TypeScript のビルド成果物を出力します。
-Webpack を用いて1つにまとめられた JavaScript ファイルが出力されます。
+Vite を用いて1つにまとめられた JavaScript ファイルが出力されます。
 
-`tsconfig.json` 及び `webpack.config.js` を編集することで設定内容を変更できます。
+`tsconfig.json` 及び `vite.config.mts` を編集することで設定内容を変更できます。
 
-### `npm: build:prod`
+*`build:microphone` はマイク入力版となります。
+
+### `npm: build:prod` (`npm: build:prod:microphone`)
 
 上記のビルドを最適化した上で行います。
 ビルドサイズが削減されるため、本番環境用の成果物の出力に使用します。
+
+*`build:prod:microphone` はマイク入力版となります。
 
 ### `npm: test`
 
@@ -62,7 +68,7 @@ TypeScript の型チェックテストを行います。
 ### `npm: serve`
 
 簡易ローカルサーバを起動します。
-ブラウザからサーバ内の `/Samples/TypeScript/Demo` にアクセスすることで index.html の確認ができます。
+ブラウザからサーバにアクセスすることで index.html の確認ができます。
 事前にプロジェクトのビルドを行なっている必要があります。
 
 本番環境に近い環境で成果物の検証を行うことができます。

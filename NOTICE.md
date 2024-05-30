@@ -4,11 +4,11 @@
 
 # Notices
 
-## [Restrictions] Sample operation on iOS (2024-01-30)
+## [Restrictions] Microphone sample operation on macOS Safari (2024-05-30)
 
-We have identified an issue with the sample project, in which the audio may not play properly on iOS devices.
+We have identified an issue with the microphone sample project, in which the loopback audio may not play properly on macOS Safari.
 
-This matter will be addressed in a future release.
+This matter will be addressed in a future release. Please use a browser other than Safari.
 
 
 ---
