@@ -92,6 +92,11 @@ export class LAppMotionSyncLive2DManager {
    */
   public onUpdate(): void {
     const { width, height } = canvas;
+    let modelScale: number = 1.0;
+
+    if (navigator.userAgent.includes('Mobile')) {
+      modelScale = 0.5;
+    }
 
     const modelCount: number = this._models.getSize();
 
@@ -103,9 +108,9 @@ export class LAppMotionSyncLive2DManager {
         if (model.getModel().getCanvasWidth() > 1.0 && width < height) {
           // 横に長いモデルを縦長ウィンドウに表示する際モデルの横サイズでscaleを算出する
           model.getModelMatrix().setWidth(2.0);
-          projection.scale(1.0, width / height);
+          projection.scale(modelScale, (width / height) * modelScale);
         } else {
-          projection.scale(height / width, 1.0);
+          projection.scale((height / width) * modelScale, modelScale);
         }
 
         // 必要があればここで乗算

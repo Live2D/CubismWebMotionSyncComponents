@@ -15,7 +15,7 @@ export const MotionSync: string = 'MotionSync';
 export class CubismModelMotionSyncSettingJson extends CubismModelSettingJson {
   public constructor(buffer: ArrayBuffer, size: number) {
     super(buffer, size);
-    this._motionSyncFilePath = this.GetJson()
+    this._motionSyncFilePath = this.getJson()
       .getRoot()
       .getValueByString(FileReferences)
       .getValueByString(MotionSync)

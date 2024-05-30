@@ -13,7 +13,7 @@ import {
 } from './lappmotionsyncaudiomanager';
 import { LAppMotionSyncModel } from './lappmotionsyncmodel';
 
-export class LAppPlaySound {
+export class LAppAudioManager {
   /**
    * パスからの音声ファイルの読み込み
    *
@@ -42,14 +42,6 @@ export class LAppPlaySound {
           this._soundBufferContext
             .getBuffers()
             .set(index, new csmVector<number>());
-
-          // Messege発した時にデータ取って来れるように設定
-          this._soundBufferContext
-            .getAudioManager()
-            .setOnMessageByIndex(
-              index,
-              this._soundBufferContext.getBuffers().at(index)
-            );
         }
       );
   }

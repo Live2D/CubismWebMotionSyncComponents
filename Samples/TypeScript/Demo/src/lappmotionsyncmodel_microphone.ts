@@ -7,6 +7,7 @@
 
 import { CubismIdHandle } from '@framework/id/cubismid';
 import { CubismMatrix44 } from '@framework/math/cubismmatrix44';
+import { CubismMoc } from '@framework/model/cubismmoc';
 import { CubismUserModel } from '@framework/model/cubismusermodel';
 import { csmMap } from '@framework/type/csmmap';
 import { csmRect } from '@framework/type/csmrectf';
@@ -17,17 +18,15 @@ import {
   CubismLogError,
   CubismLogInfo
 } from '@framework/utils/cubismdebug';
-
 import * as LAppDefine from '@cubismsdksamples/lappdefine';
-import * as LAppMotionSyncDefine from './lappmotionsyncdefine';
-import { frameBuffer, LAppMotionSyncDelegate } from './lappmotionsyncdelegate';
+import { canvas, gl } from '@cubismsdksamples/lappglmanager';
 import { LAppPal } from '@cubismsdksamples/lapppal';
 import { TextureInfo } from '@cubismsdksamples/lapptexturemanager';
-import { CubismMoc } from '@framework/model/cubismmoc';
 import { CubismModelMotionSyncSettingJson } from '@motionsyncframework/cubismmodelmotionsyncsettingjson';
-import { LAppAudioManager } from './lappaudiomanager';
 import { CubismMotionSync } from '@motionsyncframework/live2dcubismmotionsync';
-import { canvas, gl } from '@cubismsdksamples/lappglmanager';
+import { LAppInputDevice } from './lappinputdevice';
+import * as LAppMotionSyncDefine from './lappmotionsyncdefine';
+import { frameBuffer, LAppMotionSyncDelegate } from './lappmotionsyncdelegate';
 
 enum LoadStep {
   LoadAssets,
@@ -173,22 +172,24 @@ export class LAppMotionSyncModel extends CubismUserModel {
           })
           .then(arrayBuffer => {
             this.loadMotionSync(arrayBuffer, arrayBuffer.byteLength);
-            // 音声ファイルの読み込み
-            this._soundFileList =
-              this._modelSetting.getMotionSyncSoundFileList();
-            this._soundIndex = 0;
           })
           .then(() => {
-            this.loadFromSoundList();
+            LAppInputDevice.getInstance()
+              .initialize()
+              .then(() => {
+                LAppInputDevice.getInstance()
+                  .connect()
+                  .then(() => {
+                    this._state = LoadStep.LoadTexture;
 
-            this._state = LoadStep.LoadTexture;
+                    this._updating = false;
+                    this._initialized = true;
 
-            this._updating = false;
-            this._initialized = true;
-
-            this.createRenderer();
-            this.setupTextures();
-            this.getRenderer().startUp(gl);
+                    this.createRenderer();
+                    this.setupTextures();
+                    this.getRenderer().startUp(gl);
+                  });
+              });
           });
       }
     };
@@ -273,75 +274,6 @@ export class LAppMotionSyncModel extends CubismUserModel {
   }
 
   /**
-   * 音声ファイルリストから読み込みを行う。
-   */
-  public loadFromSoundList(): void {
-    if (!this._soundFileList || !this._soundData) {
-      return;
-    }
-
-    this._soundData
-      .getSoundBufferContext()
-      .getAudioManager()
-      ._audios.resize(this._soundFileList.getSize());
-    this._soundData
-      .getSoundBufferContext()
-      .getBuffers()
-      .resize(this._soundFileList.getSize());
-
-    for (let index = 0; index < this._soundFileList.getSize(); index++) {
-      const filePath = this._modelHomeDir + this._soundFileList.at(index).s;
-      this._soundData.loadFile(filePath, index, this, this._motionSync);
-    }
-  }
-
-  /**
-   * 現在の音声のコンテキストが待機状態かどうかを判定する
-   *
-   * @returns 現在の音声のコンテキストが待機状態か？
-   */
-  public isSuspendedCurrentSoundContext(): boolean {
-    return this._soundData.isSuspendedContextByIndex(this._soundIndex);
-  }
-
-  /**
-   * 現在の音声を再生する
-   */
-  public playCurrentSound(): void {
-    if (
-      !this._soundData ||
-      !this._soundFileList ||
-      !(this._soundIndex < this._soundFileList.getSize()) ||
-      !this._motionSync
-    ) {
-      return;
-    }
-
-    this._motionSync.setSoundBuffer(
-      0,
-      this._soundData.getSoundBufferContext().getBuffers().at(this._soundIndex),
-      0
-    );
-
-    this._soundData.playByIndex(this._soundIndex);
-  }
-
-  /**
-   * 現在の音声を再生停止する
-   */
-  public stopCurrentSound(): void {
-    if (
-      !this._soundData ||
-      !this._soundFileList ||
-      !(this._soundIndex < this._soundFileList.getSize())
-    ) {
-      return;
-    }
-
-    this._soundData.stopByIndex(this._soundIndex);
-  }
-
-  /**
    * 配列のpush処理、コンテナに新たな要素を追加する
    * @param value Push処理で追加する配列の元データ
    */
@@ -363,71 +295,16 @@ export class LAppMotionSyncModel extends CubismUserModel {
   /**
    * モーションシンクの更新
    */
-  public updateMotionSync() {
-    const soundBuffer = this._soundData
-      .getSoundBufferContext()
-      .getBuffers()
-      .at(this._soundIndex);
-    const audioInfo = this._soundData
-      .getSoundBufferContext()
-      .getAudioManager()
-      ._audios.at(this._soundIndex);
-
+  public updateMotionSync(): void {
     // 現在フレームの時間を秒単位で取得
     // NOTE: ブラウザやブラウザ側の設定により、performance.now() の精度が異なる可能性に注意
     const currentAudioTime = performance.now() / 1000.0; // convert to seconds.
 
-    // 再生時間の更新
-    // 前回フレームの時間が現在時刻よりも前だった場合は同時刻として扱う。
-    if (currentAudioTime < audioInfo.audioContextPreviousTime) {
-      audioInfo.audioContextPreviousTime = currentAudioTime;
-    }
+    // サウンドバッファの設定
+    const buffer = LAppInputDevice.getInstance().pop();
+    this._motionSync.setSoundBuffer(0, buffer, 0);
 
-    // 前回フレームの時間から経過時間を計算
-    const audioDeltaTime =
-      currentAudioTime - audioInfo.audioContextPreviousTime;
-
-    // 経過時間を更新
-    audioInfo.audioElapsedTime += audioDeltaTime;
-
-    // 再生時間をサンプル数に変換する。
-    // サンプル数 = 再生時間 * サンプリングレート
-    // NOTE: サンプリングレートは、音声ファイルに設定された値を使用する。音声コンテキストのサンプリングレートを使用すると、正しくモーションシンクが再生されない場合がある。
-    const currentSamplePosition = Math.floor(
-      audioInfo.audioElapsedTime * audioInfo.wavhandler.getWavSamplingRate()
-    );
-
-    // 処理済みの再生位置が音声のサンプル数を超えていたら、処理を行わない。
-    if (audioInfo.previousSamplePosition <= audioInfo.audioSamples.length) {
-      // 前回の再生位置を起点に、音声サンプルを再生済みの数だけ取得する。
-      const currentAudioSamples = audioInfo.audioSamples.slice(
-        audioInfo.previousSamplePosition,
-        currentSamplePosition
-      );
-
-      // サウンドバッファに再生済みのサンプルを追加する。
-      for (let index = 0; index < currentAudioSamples.length; index++) {
-        soundBuffer.pushBack(currentAudioSamples[index]);
-      }
-
-      // サウンドバッファの設定
-      this._motionSync.setSoundBuffer(0, soundBuffer, 0);
-
-      // モーションシンクの更新
-      this._motionSync.updateParameters(this._model, audioDeltaTime);
-
-      // 解析しただけデータを削除する。
-      const lastTotalProcessedCount =
-        this._motionSync.getLastTotalProcessedCount(0);
-      this._soundData.removeDataArrayByIndex(
-        this._soundIndex,
-        lastTotalProcessedCount
-      );
-
-      // 再生済みのサンプル数と再生時間を現在のものへ更新する。
-      audioInfo.audioContextPreviousTime = currentAudioTime;
-      audioInfo.previousSamplePosition = currentSamplePosition;
-    }
+    this._motionSync.updateParameters(this._model, currentAudioTime);
   }
 
   /**
@@ -449,9 +326,7 @@ export class LAppMotionSyncModel extends CubismUserModel {
       this._pose.updateParameters(this._model, deltaTimeSeconds);
     }
 
-    if (this._soundData.isPlayByIndex(this._soundIndex)) {
-      this.updateMotionSync();
-    }
+    this.updateMotionSync();
 
     this._model.update();
   }
@@ -567,9 +442,6 @@ export class LAppMotionSyncModel extends CubismUserModel {
     this._motionCount = 0;
     this._allMotionCount = 0;
     this._consistency = false;
-    this._soundFileList = new csmVector<csmString>();
-    this._soundIndex = 0;
-    this._soundData = new LAppAudioManager();
     this._lastSampleCount = 0;
   }
 
@@ -579,16 +451,6 @@ export class LAppMotionSyncModel extends CubismUserModel {
     if (this._motionSync) {
       this._motionSync.release();
       this._motionSync = null;
-    }
-
-    if (this._soundFileList) {
-      this._soundFileList?.clear();
-      this._soundFileList = null;
-    }
-
-    if (this._soundData) {
-      this._soundData?.release();
-      this._soundData = null;
     }
   }
 
@@ -606,9 +468,6 @@ export class LAppMotionSyncModel extends CubismUserModel {
   _allMotionCount: number; // モーション総数
   _consistency: boolean; // MOC3一貫性チェック管理用
 
-  _soundFileList: csmVector<csmString>; // モーションシンクで利用するファイルのリスト
-  _soundIndex: number; // 再生する音声データのインデックス
-  _soundData: LAppAudioManager; // 音声管理
   _motionSync: CubismMotionSync; // モーションシンク
   _lastSampleCount: number; // 最後にサンプリングしたフレーム数
 }

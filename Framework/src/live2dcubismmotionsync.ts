@@ -13,6 +13,7 @@ import {
   CubismLogInfo,
   CubismLogWarning
 } from '@framework/utils/cubismdebug';
+import { CubismMath } from '@framework/math/cubismmath';
 import {
   CubismMotionSyncData,
   CubismMotionSyncDataSetting
@@ -21,7 +22,7 @@ import { CubismMotionSyncEngineAnalysisResult } from './cubismmotionsyncenginean
 import { CubismMotionSyncEngineController } from './cubismmotionsyncenginecontroller';
 import { CubismMotionSyncEngineCri } from './cubismmotionsyncenginecri';
 import { CubismMotionSyncProcessorCRI } from './cubismmotionsyncprocessorcri';
-import { EngineType, MotionSyncUtil } from './cubismmotionsyncutil';
+import { EngineType } from './cubismmotionsyncutil';
 import { ICubismMotionSyncEngine } from './icubismmotionsyncengine';
 import { ICubismMotionSyncProcessor } from './icubismmotionsyncprocessor';
 
@@ -331,10 +332,11 @@ export class CubismMotionSync {
       this.analyze(model, processIndex);
 
       // Reset counter.
-      this._processorInfoList.at(processIndex)._currentRemainTime = MotionSyncUtil.fmod(
-        this._processorInfoList.at(processIndex)._currentRemainTime,
-        processorDeltaTime
-      );
+      this._processorInfoList.at(processIndex)._currentRemainTime =
+        CubismMath.mod(
+          this._processorInfoList.at(processIndex)._currentRemainTime,
+          processorDeltaTime
+        );
 
       for (
         let targetIndex = 0;
@@ -509,19 +511,6 @@ export class CubismMotionSync {
     }
   }
 
-  public SetAudioLevelEffectRatio(
-    processIndex: number,
-    audioLevelEffectRatio: number
-  ): void {
-    if (!CubismMotionSync.isInitialized()) {
-      return;
-    }
-    if (processIndex < this._processorInfoList.getSize()) {
-      this._processorInfoList.at(processIndex)._audioLevelEffectRatio =
-        audioLevelEffectRatio;
-    }
-  }
-
   public getData(): CubismMotionSyncData {
     return this._data;
   }
@@ -614,7 +603,7 @@ export class CubismProcessorInfo {
   _blendRatio: number;
   _smoothing: number;
   _sampleRate: number;
-  _audioLevelEffectRatio: number;
+  _audioLevelEffectRatio: number; // Unused
   _sampleBuffer: csmVector<number>;
   _sampleBufferIndex: number;
   _model: CubismModel;

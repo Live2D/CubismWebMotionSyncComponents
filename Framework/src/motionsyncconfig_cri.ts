@@ -116,7 +116,7 @@ export class MotionSyncAnalysisConfig_CRI {
 
   public BlendRatio: number;
   public Smoothing: number;
-  public AudioLevelEffectRatio: number;
+  public AudioLevelEffectRatio: number; // Unused
   private _nativeArray: Float32Array;
   private _nativeArrayPtr: number;
 }

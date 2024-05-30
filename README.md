@@ -92,7 +92,9 @@ If you want to run Samples, you need to make additional changes to the relevant 
 
 * Samples/TypeScript/Demo/index.html
 * Samples/TypeScript/Demo/tsconfig.json
-* Samples/TypeScript/Demo/webpack.config.js
+* Samples/TypeScript/Demo/vite.config.mts
+* Samples/TypeScript/Demo/vite.config.microphone.mts
+* Samples/TypeScript/Demo/copy_resources.js
 
 If you want to change the directory structure, you can do so by editing the above file.
 
@@ -112,15 +114,14 @@ Once the copy is complete, modify the `url` key as follows. Replace `CubismWebMo
 The task list is displayed by entering `>Tasks: Run Task` in the command palette (*View > Command Palette...*).
 
 1. Select `npm: install - CubismWebMotionSyncComponents/Samples/TypeScript/Demo` from the task list to download the dependent package
-1. Select `npm: build - CubismWebMotionSyncComponents/Samples/TypeScript/Demo` from the task list to build the sample demo
-1. Select `npm: create-ca - CubismWebMotionSyncComponents/Samples/TypeScript/Demo` from the task list to Certificate Authority information for development
-1. Select `npm: create-cert - CubismWebMotionSyncComponents/Samples/TypeScript/Demo` from the task list to certificate information for development
-1. Select `npm: serve-https - CubismWebMotionSyncComponents/Samples/TypeScript/Demo` from the task list to start a simple server for checking the operation
-1. Enter `https://localhost:5000/CubismWebMotionSyncComponents/Samples/TypeScript/Demo/` in the URL field of your browser to access it
+1. Select `npm: build - CubismWebMotionSyncComponents/Samples/TypeScript/Demo` from the task list to build a sample demo using audio files
+1. Or, select `npm: build:microphone - CubismWebMotionSyncComponents/Samples/TypeScript/Demo` from the task list to build a sample demo using microphone input
+1. Select `npm: serve - CubismWebMotionSyncComponents/Samples/TypeScript/Demo` from the task list to start a simple server for checking the operation
+1. Enter `https://localhost:5000/` in the URL field of your browser to access it
 1. Enter `>Tasks: Terminate Task` from the command palette and select `npm: serve-https` to terminate the simple server
 
 NOTE: Replace `CubismWebMotionSyncComponents` with the name of the root directory for this plugin if changed.
-NOTE: This sample project uses the `mkcert` package to issue self-signed certificates. The self-signed certificate issued by this sample project is not intended for use outside of the development environment. It may also cause warnings in some browsers.
+NOTE: This sample project uses the `@vitejs/plugin-basic-ssl` package to issue self-signed certificates. The self-signed certificate issued by this sample project is not intended for use outside of the development environment. It may also cause warnings in some browsers.
 
 For other tasks, please refer to [README.md](Samples/TypeScript/README.md) of the sample project.
 
@@ -146,52 +147,61 @@ Please refer to [CHANGELOG.md](CHANGELOG.md) for the changelog of this repositor
 
 ### Node.js
 
-* 21.5.0
-* 20.11.0
+* 22.2.0
+* 20.13.1
 
 
 ## Operation environment
 
 | Platform | Browser | Version |
 | --- | --- | --- |
-| Android | Google Chrome | 120.0.6099.210 |
-| Android | Microsoft Edge | 120.0.2210.115 |
-| Android | Mozilla Firefox | 121.1.0 |
-| iOS / iPadOS | Google Chrome | 120.0.6099.119 |
-| iOS / iPadOS | Microsoft Edge | 120.0.2210.126 |
-| iOS / iPadOS | Mozilla Firefox | 121.2 |
-| iOS / iPadOS | Safari | 17.2 |
-| macOS | Google Chrome | 120.0.6099.216 |
-| macOS | Microsoft Edge | 120.0.2210.121 |
-| macOS | Mozilla Firefox | 121.0.1 |
-| macOS | Safari | 17.2.1 |
-| Windows | Google Chrome | 120.0.6099.217 |
-| Windows | Microsoft Edge | 120.0.2210.121 |
-| Windows | Mozilla Firefox | 121.0.1 |
+| Android | Google Chrome | 125.0.6422.113 |
+| Android | Microsoft Edge | 124.0.2478.104 |
+| Android | Mozilla Firefox | 126.0 |
+| iOS / iPadOS | Google Chrome | 125.0.6422.80 |
+| iOS / iPadOS | Microsoft Edge | 125.0.2535.60 |
+| iOS / iPadOS | Mozilla Firefox | 126.1 |
+| iOS / iPadOS | Safari | 17.4.1 |
+| macOS | Google Chrome | 125.0.6422.113 |
+| macOS | Microsoft Edge | 125.0.2535.67 |
+| macOS | Mozilla Firefox | 126.0 |
+| macOS | Safari | 17.5 |
+| Windows | Google Chrome | 125.0.6422.113 |
+| Windows | Microsoft Edge | 125.0.2535.67 |
+| Windows | Mozilla Firefox | 126.0 |
 
 Note: You can start the server for operation check by running the `serve-https` script of `./Samples/TypeScript/Demo/package.json`.
 
+### Cubism SDK for Web
+
+[Cubism 5 SDK for Web R1](https://github.com/Live2D/CubismWebSamples/releases/tag/5-r.1)
+
+## Sound device
+
+The sound device for input/output is a specification whereby the default device is used.
+
+Depending on your environment, feedback may occur. To prevent this, please mute the sample application and the device's sound playback, or move the microphone and speaker away from each other.
 
 ## Contributing
 
-There are many ways to contribute to the project: logging bugs, submitting pull requests on this GitHub, and reporting issues and making suggestions in Live2D Community.
+There are many ways to contribute to the project: logging bugs, submitting pull requests on this GitHub, and reporting issues and making suggestions in Live2D Forum.
 
 ### Forking And Pull Requests
 
-We very much appreciate your pull requests, whether they bring fixes, improvements, or even new features. Note, however, that the wrapper is designed to be as lightweight and shallow as possible and should therefore only be subject to bug fixes and memory/performance improvements. To keep the main repository as clean as possible, create a personal fork and feature branches there as needed.
+We very much appreciate your pull requests, whether they bring fixes, improvements, or even new features. To keep the main repository as clean as possible, create a personal fork and feature branches there as needed.
 
 ### Bugs
 
-We are regularly checking issue-reports and feature requests at Live2D Community. Before filing a bug report, please do a search in Live2D Community to see if the issue-report or feature request has already been posted. If you find your issue already exists, make relevant comments and add your reaction.
+We are regularly checking issue-reports and feature requests at Live2D Forum. Before filing a bug report, please do a search in Live2D Forum to see if the issue-report or feature request has already been posted. If you find your issue already exists, make relevant comments and add your reaction.
 
 ### Suggestions
 
-We're also interested in your feedback for the future of the SDK. You can submit a suggestion or feature request at Live2D Community. To make this process more effective, we're asking that you include more information to help define them more clearly.
+We're also interested in your feedback for the future of the SDK. You can submit a suggestion or feature request at Live2D Forum. To make this process more effective, we're asking that you include more information to help define them more clearly.
 
 
 ## Forum
 
 If you want to suggest or ask questions about how to use the Cubism SDK between users, please use the forum.
 
-- [Live2D Creator's Forum](https://community.live2d.com/)
+- [Live2D Creators Forum](https://community.live2d.com/)
 - [Live2D 公式クリエイターズフォーラム (Japanese)](https://creatorsforum.live2d.com/)
