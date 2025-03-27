@@ -311,7 +311,10 @@ export class CubismMotionSync {
               this._processorInfoList
                 .at(processIndex)
                 ._analysisResult.getValues()[targetIndex]
-            )
+            ) ||
+            this._data
+              .getSetting(processIndex)
+              .cubismParameterList.at(targetIndex).parameterIndex < 0
           ) {
             continue;
           }
@@ -349,7 +352,10 @@ export class CubismMotionSync {
             this._processorInfoList
               .at(processIndex)
               ._analysisResult.getValues()[targetIndex]
-          )
+          ) ||
+          this._data
+            .getSetting(processIndex)
+            .cubismParameterList.at(targetIndex).parameterIndex < 0
         ) {
           continue;
         }
@@ -585,9 +591,16 @@ export class CubismProcessorInfo {
       index < setting.cubismParameterList.getSize();
       index++
     ) {
-      const parameterValue: number = this._model.getParameterValueByIndex(
-        setting.cubismParameterList.at(index).parameterIndex
-      );
+      let parameterValue: number = 0;
+
+      // パラメータが存在する場合は値を取得
+      // HACK: Listのインデックスを合わせるため、continueしない。
+      if (setting.cubismParameterList.at(index).parameterIndex >= 0) {
+        parameterValue = this._model.getParameterValueByIndex(
+          setting.cubismParameterList.at(index).parameterIndex
+        );
+      }
+
       this._lastSmoothedList.pushBack(parameterValue);
       this._lastDampedList.pushBack(parameterValue);
     }

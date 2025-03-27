@@ -10,11 +10,10 @@ import { csmVector } from '@framework/type/csmvector';
 
 import * as LAppDefine from '@cubismsdksamples/lappdefine';
 import * as LappMotionSyncDefine from './lappmotionsyncdefine';
-import { canvas } from '@cubismsdksamples/lappglmanager';
 import { LAppMotionSyncModel } from './lappmotionsyncmodel';
 import { LAppPal } from '@cubismsdksamples/lapppal';
-
-export let s_instance: LAppMotionSyncLive2DManager = null;
+import { LAppMotionSyncSubdelegate } from './lappmotionsyncsubdelegate';
+import { LAppInputDevice } from './lappinputdevice';
 
 /**
  * サンプルアプリケーションにおいてCubismModelを管理するクラス
@@ -22,53 +21,15 @@ export let s_instance: LAppMotionSyncLive2DManager = null;
  */
 export class LAppMotionSyncLive2DManager {
   /**
-   * クラスのインスタンス（シングルトン）を返す。
-   * インスタンスが生成されていない場合は内部でインスタンスを生成する。
-   *
-   * @return クラスのインスタンス
-   */
-  public static getInstance(): LAppMotionSyncLive2DManager {
-    if (s_instance == null) {
-      s_instance = new LAppMotionSyncLive2DManager();
-    }
-
-    return s_instance;
-  }
-
-  /**
-   * クラスのインスタンス（シングルトン）を解放する。
-   */
-  public static releaseInstance(): void {
-    if (s_instance != null) {
-      s_instance = void 0;
-    }
-
-    s_instance = null;
-  }
-
-  /**
-   * 現在のシーンで保持しているモデルを返す。
-   *
-   * @param no モデルリストのインデックス値
-   * @return モデルのインスタンスを返す。インデックス値が範囲外の場合はNULLを返す。
-   */
-  public getModel(no: number): LAppMotionSyncModel {
-    if (no < this._models.getSize()) {
-      return this._models.at(no);
-    }
-
-    return null;
-  }
-
-  /**
    * 現在のシーンで保持しているすべてのモデルを解放する
    */
   public releaseAllModel(): void {
     for (let i = 0; i < this._models.getSize(); i++) {
+      // モデルの解放
+      // 内部で音声バッファの解放も行う
       this._models.at(i).release();
       this._models.set(i, null);
     }
-
     this._models.clear();
   }
 
@@ -91,37 +52,33 @@ export class LAppMotionSyncLive2DManager {
    * モデルの更新処理及び描画処理を行う
    */
   public onUpdate(): void {
-    const { width, height } = canvas;
+    const { width, height } = this._subdelegate.getCanvas();
+
+    const projection: CubismMatrix44 = new CubismMatrix44();
+    const model: LAppMotionSyncModel = this._models.at(0);
     let modelScale: number = 1.0;
 
     if (navigator.userAgent.includes('Mobile')) {
       modelScale = 0.5;
     }
 
-    const modelCount: number = this._models.getSize();
-
-    for (let i = 0; i < modelCount; ++i) {
-      const projection: CubismMatrix44 = new CubismMatrix44();
-      const model: LAppMotionSyncModel = this.getModel(i);
-
-      if (model.getModel()) {
-        if (model.getModel().getCanvasWidth() > 1.0 && width < height) {
-          // 横に長いモデルを縦長ウィンドウに表示する際モデルの横サイズでscaleを算出する
-          model.getModelMatrix().setWidth(2.0);
-          projection.scale(modelScale, (width / height) * modelScale);
-        } else {
-          projection.scale((height / width) * modelScale, modelScale);
-        }
-
-        // 必要があればここで乗算
-        if (this._viewMatrix != null) {
-          projection.multiplyByMatrix(this._viewMatrix);
-        }
+    if (model.getModel()) {
+      if (model.getModel().getCanvasWidth() > 1.0 && width < height) {
+        // 横に長いモデルを縦長ウィンドウに表示する際モデルの横サイズでscaleを算出する
+        model.getModelMatrix().setWidth(2.0);
+        projection.scale(modelScale, (width / height) * modelScale);
+      } else {
+        projection.scale((height / width) * modelScale, modelScale);
       }
 
-      model.update();
-      model.draw(projection); // 参照渡しなのでprojectionは変質する。
+      // 必要があればここで乗算
+      if (this._viewMatrix != null) {
+        projection.multiplyByMatrix(this._viewMatrix);
+      }
     }
+
+    model.update();
+    model.draw(projection); // 参照渡しなのでprojectionは変質する。
   }
 
   /**
@@ -153,8 +110,9 @@ export class LAppMotionSyncLive2DManager {
   /**
    * シーンを切り替える
    * サンプルアプリケーションではモデルセットの切り替えを行う。
+   * @param index モデルのインデックス
    */
-  public changeScene(index: number): void {
+  private changeScene(index: number): void {
     this._sceneIndex = index;
     if (LAppDefine.DebugLogEnable) {
       LAppPal.printMessage(`[APP]model index: ${this._sceneIndex}`);
@@ -169,8 +127,13 @@ export class LAppMotionSyncLive2DManager {
     modelJsonName += '.model3.json';
 
     this.releaseAllModel();
-    this._models.pushBack(new LAppMotionSyncModel());
-    this._models.at(0).loadAssets(modelPath, modelJsonName);
+    const instance = new LAppMotionSyncModel();
+    instance.setSubdelegate(this._subdelegate);
+    instance.loadAssets(modelPath, modelJsonName);
+    if (this._subdelegate._useMicrophone) {
+      instance.setProvider(LAppInputDevice.getInstance());
+    }
+    this._models.pushBack(instance);
   }
 
   public setViewMatrix(m: CubismMatrix44) {
@@ -180,14 +143,40 @@ export class LAppMotionSyncLive2DManager {
   }
 
   /**
+   * モデルの追加
+   */
+  public addModel(sceneIndex: number = 0): void {
+    this._sceneIndex = sceneIndex;
+    this.changeScene(this._sceneIndex);
+  }
+
+  /**
    * コンストラクタ
    */
-  constructor() {
+  public constructor() {
     this._viewMatrix = new CubismMatrix44();
     this._models = new csmVector<LAppMotionSyncModel>();
     this._sceneIndex = 0;
+  }
+
+  /**
+   * 解放する。
+   */
+  public release(): void {}
+
+  /**
+   * 初期化する。
+   * @param subdelegate
+   */
+  public initialize(subdelegate: LAppMotionSyncSubdelegate): void {
+    this._subdelegate = subdelegate;
     this.changeScene(this._sceneIndex);
   }
+
+  /**
+   * 自身が所属するSubdelegate
+   */
+  _subdelegate: LAppMotionSyncSubdelegate;
 
   _viewMatrix: CubismMatrix44; // モデル描画に用いるview行列
   _models: csmVector<LAppMotionSyncModel>; // モデルインスタンスのコンテナ

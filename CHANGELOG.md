@@ -4,6 +4,25 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+
+## [5-r.2] - 2025-03-27
+
+### Changed
+
+* Change a warning when parameters listed in `.motionsync3.json` do not exist in the model.
+* Microphone input processing has been separated and made into an interface that provides a voice buffer to support other inputs.
+* Audio file input and microphone input samples have been integrated.
+* Change ESLint version to `9.17.0`.
+  * With this update, we have added the eslint.confing.mjs required for FlatConfig.
+
+### Fixed
+
+* Fix problem with not working with browsers that do not provide microphone SampleRate property.
+* Fix to support multiple canvases.
+* Fix an issue where a warning displayed due to `.js.map` file of `CubismCore` and `CubismMotionSyncCore` not being found.
+* Fix an issue where some variable names in `CubismMotionSyncData.parse()` were incorrect.
+
+
 ## [5-r.1] - 2024-05-30
 
 ### Added
@@ -61,5 +80,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 * New released!
 
 
+[5-r.2]: https://github.com/Live2D/CubismWebMotionSyncComponents/compare/5-r.1...5-r.2
 [5-r.1]: https://github.com/Live2D/CubismWebMotionSyncComponents/compare/5-r.1-beta.2...5-r.1
 [5-r.1-beta.2]: https://github.com/Live2D/CubismWebMotionSyncComponents/compare/5-r.1-beta.1...5-r.1-beta.2

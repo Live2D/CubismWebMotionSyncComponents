@@ -9,7 +9,9 @@
 const fs = require('fs');
 const publicResources = [
   {src: '../../../../CubismSdkForWeb/Core/live2dcubismcore.js', dst: './public/Core/live2dcubismcore.js'},
+  {src: '../../../../CubismSdkForWeb/Core/live2dcubismcore.js.map', dst: './public/Core/live2dcubismcore.js.map'},
   {src: '../../../Core/CRI/live2dcubismmotionsynccore.js', dst: './public/Core/CRI/live2dcubismmotionsynccore.js'},
+  {src: '../../../Core/CRI/live2dcubismmotionsynccore.js.map', dst: './public/Core/CRI/live2dcubismmotionsynccore.js.map'},
   {src: 'src/lappaudioworkletprocessor.js', dst: './public/src/lappaudioworkletprocessor.js'},
   {src: '../../Resources', dst: './public/Resources'},
 ];

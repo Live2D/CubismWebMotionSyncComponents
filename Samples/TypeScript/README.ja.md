@@ -11,8 +11,8 @@ TypeScript で実装したアプリケーションのサンプル実装です。
 
 | パッケージ | バージョン |
 | --- | --- |
-| TypeScript | 5.4.3 |
-| Vite | 5.2.7 |
+| TypeScript | 5.8.2 |
+| Vite | 6.2.0 |
 
 その他のパッケージに関しては、各プロジェクトの `package.json` を確認してください。
 また、その他の開発環境・動作確認環境はトップディレクトリにある [README.md](/README.ja.md) を参照してください。
@@ -20,7 +20,7 @@ TypeScript で実装したアプリケーションのサンプル実装です。
 
 ## タスク一覧
 
-### `npm: start` (`npm: start:microphone`)
+### `npm: start`
 
 開発用のローカルサーバが起動され、プロジェクトの監視ビルドが行われます。
 プロジェクトの変更を行うと自動的に再ビルドが行われ、ブラウザのリロードが発生します。
@@ -29,23 +29,17 @@ TypeScript で実装したアプリケーションのサンプル実装です。
 Visual Studio Code 上で終了する場合は、
 コマンドパレットから `>Tasks: Terminate Task` を入力してタスクを選択します。
 
-*`start:microphone` はマイク入力版となります。
-
-### `npm: build` (`npm: build:microphone`)
+### `npm: build`
 
 `dist` ディレクトリに、TypeScript のビルド成果物を出力します。
 Vite を用いて1つにまとめられた JavaScript ファイルが出力されます。
 
 `tsconfig.json` 及び `vite.config.mts` を編集することで設定内容を変更できます。
 
-*`build:microphone` はマイク入力版となります。
-
-### `npm: build:prod` (`npm: build:prod:microphone`)
+### `npm: build:prod`
 
 上記のビルドを最適化した上で行います。
 ビルドサイズが削減されるため、本番環境用の成果物の出力に使用します。
-
-*`build:prod:microphone` はマイク入力版となります。
 
 ### `npm: test`
 

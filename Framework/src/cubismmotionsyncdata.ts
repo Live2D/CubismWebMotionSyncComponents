@@ -77,7 +77,7 @@ export class CubismMotionSyncData {
         cubismParameterIndex < parameterCount;
         cubismParameterIndex++
       ) {
-        let partIndex: number = parameterCount;
+        let parameterIndex: number = -1;
 
         for (
           let modelParameterIndex = 0;
@@ -89,11 +89,20 @@ export class CubismMotionSyncData {
               .getParameterId(modelParameterIndex)
               .isEqual(cubismParameterList.at(cubismParameterIndex).id)
           ) {
-            partIndex = modelParameterIndex;
+            parameterIndex = modelParameterIndex;
             break;
           }
         }
-        cubismParameterList.at(cubismParameterIndex).parameterIndex = partIndex;
+        cubismParameterList.at(cubismParameterIndex).parameterIndex =
+          parameterIndex;
+
+        if (parameterIndex < 0) {
+          CubismLogWarning(
+            `Failed to find parameter index for ${
+              cubismParameterList.at(cubismParameterIndex).id.s
+            }`
+          );
+        }
       }
     }
 
