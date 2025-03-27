@@ -9,9 +9,9 @@ import { csmVector } from '@framework/type/csmvector';
 
 import { LAppResponseObject } from './lappmotionsyncaudiomanager';
 import { CubismLogError } from '@framework/utils/cubismdebug';
+import { ILAppAudioBufferProvider } from './lappiaudiobufferprovider';
 
 export let s_instance: LAppInputDevice = null;
-export let connected: boolean = false;
 
 /**
  * AudioWorklet からデータを保持しておくためのバッファクラス
@@ -64,7 +64,7 @@ class AudioBuffer {
   }
 }
 
-export class LAppInputDevice {
+export class LAppInputDevice implements ILAppAudioBufferProvider {
   /**
    * クラスのインスタンス（シングルトン）を返す。
    * インスタンスが生成されていない場合は内部でインスタンスを生成する。
@@ -82,64 +82,86 @@ export class LAppInputDevice {
   private _source: MediaStreamAudioSourceNode;
   private _context: AudioContext;
   private _buffer: AudioBuffer;
+  private _lockId: string;
+  private _isInitialized: boolean = false;
+
+  public isInitialized(): boolean {
+    return this._isInitialized;
+  }
 
   public async initialize(): Promise<boolean> {
-    const devices = await navigator.mediaDevices.enumerateDevices();
-    const audios = devices.filter(
-      (value, _index, _array) => value.kind === 'audioinput'
-    );
-    if (audios.length == 0) {
-      CubismLogError('No audio input devices found.');
-      return false;
-    }
-    const constraints: MediaStreamConstraints = {
-      audio: { deviceId: audios[0].deviceId }
-    };
-    const stream = await navigator.mediaDevices.getUserMedia(constraints);
-    const tracks = stream.getAudioTracks();
-    if (tracks.length == 0) {
-      return false;
-    }
-    const sampleRate = tracks[0].getSettings().sampleRate;
-    // 多少余裕を持たせ(30fps)2フレーム分程度でバッファを作成
-    // NOTE: `requestAnimationFrame()` がコールバックを呼ぶ仕様上の間隔はディスプレイリフレッシュレート依存のため
-    // 本来はこのリフレッシュレートに沿ったfps値を設定すべきであるが、これを取得するAPIが存在しないため。
-    // リフレッシュレートが30Hzを下回ることは基本的にはない想定で30としています。
-    const frameRate: number = 30; // 最低限期待されるリフレッシュレート
-    const amount: number = 2; // 2フレーム分
-    this._buffer = new AudioBuffer(
-      Math.trunc((sampleRate / frameRate) * amount)
-    );
-    this._context = new AudioContext({ sampleRate: sampleRate });
-    this._source = this._context.createMediaStreamSource(
-      new MediaStream([tracks[0]])
-    );
+    // NOTE: Lock API はワーカーや他のタブと共有します。ロックに使う名称は極力他と被らないようにしてください。
+    await navigator.locks.request(this._lockId, async lock => {
+      if (this.isInitialized()) {
+        return true;
+      }
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const audios = devices.filter(
+        (value, index, array) => value.kind === 'audioinput'
+      );
+      if (audios.length == 0) {
+        CubismLogError('No audio input devices found.');
+        return false;
+      }
+      const constraints: MediaStreamConstraints = {
+        audio: { deviceId: audios[0].deviceId }
+      };
+      let stream: MediaStream;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia(constraints);
+      } catch (error) {
+        if (typeof error === 'object') {
+          if ('message' in error) {
+            console.error(error.message);
+          }
+        }
+        return false;
+      }
+      const tracks = stream.getAudioTracks();
+      if (tracks.length == 0) {
+        return false;
+      }
+      const settings: MediaTrackSettings = tracks[0].getSettings();
+      const isSampleRateSupported: boolean = 'sampleRate' in settings;
+      // NOTE: 一部のブラウザはsampleRateを提供しないので暫定48000
+      const sampleRate = isSampleRateSupported ? settings.sampleRate : 48000;
+      // 多少余裕を持たせ(30fps)2フレーム分程度でバッファを作成
+      // NOTE: `requestAnimationFrame()` がコールバックを呼ぶ仕様上の間隔はディスプレイリフレッシュレート依存のため
+      // 本来はこのリフレッシュレートに沿ったfps値を設定すべきであるが、これを取得するAPIが存在しないため。
+      // リフレッシュレートが30Hzを下回ることは基本的にはない想定で30としています。
+      const frameRate: number = 30; // 最低限期待されるリフレッシュレート
+      const amount: number = 2; // 2フレーム分
+      this._buffer = new AudioBuffer(
+        Math.trunc((sampleRate / frameRate) * amount)
+      );
+      // NOTE: AudioContext サポートしている sampleRate を知るすべが現状ないので未指定で作成
+      this._context = new AudioContext();
+      this._source = this._context.createMediaStreamSource(
+        new MediaStream([tracks[0]])
+      );
+      await this._context.audioWorklet.addModule(
+        './src/lappaudioworkletprocessor.js'
+      );
+      const audioWorkletNode = new AudioWorkletNode(
+        this._context,
+        'lappaudioworkletprocessor'
+      );
+      this._source.connect(audioWorkletNode);
+      audioWorkletNode.connect(this._context.destination);
+      audioWorkletNode.port.onmessage = this.onMessage.bind(this);
+
+      this._isInitialized = true;
+    });
+
     return true;
   }
 
-  public async connect(): Promise<void> {
-    if (connected) {
-      return;
-    }
-
-    await this._context.audioWorklet.addModule(
-      './src/lappaudioworkletprocessor.js'
-    );
-    const audioWorkletNode = new AudioWorkletNode(
-      this._context,
-      'lappaudioworkletprocessor'
-    );
-    this._source.connect(audioWorkletNode);
-    audioWorkletNode.connect(this._context.destination);
-    audioWorkletNode.port.onmessage = this.onMessage.bind(this);
-
-    connected = true;
+  public getBuffer(): csmVector<number> {
+    return this._buffer.toVector();
   }
 
-  public pop(): csmVector<number> {
-    const buffer = this._buffer.toVector();
+  public reset(): void {
     this._buffer.clear();
-    return buffer;
   }
 
   private onMessage(e: MessageEvent<any>) {
@@ -161,5 +183,10 @@ export class LAppInputDevice {
     throw new Error('Method not implemented.');
   }
 
-  public constructor() {}
+  public constructor() {
+    // NOTE: 非同期な初期化処理が多重処理されないために Lock API を使用する際の Key
+    // Lock API が文字列しか受け入れないため UUID を生成している。
+    this._lockId = crypto.randomUUID();
+    this._buffer = new AudioBuffer(0);
+  }
 }

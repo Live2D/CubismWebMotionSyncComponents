@@ -93,7 +93,6 @@ If you want to run Samples, you need to make additional changes to the relevant 
 * Samples/TypeScript/Demo/index.html
 * Samples/TypeScript/Demo/tsconfig.json
 * Samples/TypeScript/Demo/vite.config.mts
-* Samples/TypeScript/Demo/vite.config.microphone.mts
 * Samples/TypeScript/Demo/copy_resources.js
 
 If you want to change the directory structure, you can do so by editing the above file.
@@ -114,8 +113,7 @@ Once the copy is complete, modify the `url` key as follows. Replace `CubismWebMo
 The task list is displayed by entering `>Tasks: Run Task` in the command palette (*View > Command Palette...*).
 
 1. Select `npm: install - CubismWebMotionSyncComponents/Samples/TypeScript/Demo` from the task list to download the dependent package
-1. Select `npm: build - CubismWebMotionSyncComponents/Samples/TypeScript/Demo` from the task list to build a sample demo using audio files
-1. Or, select `npm: build:microphone - CubismWebMotionSyncComponents/Samples/TypeScript/Demo` from the task list to build a sample demo using microphone input
+1. Select `npm: build - CubismWebMotionSyncComponents/Samples/TypeScript/Demo` from the task list to build a sample demo
 1. Select `npm: serve - CubismWebMotionSyncComponents/Samples/TypeScript/Demo` from the task list to start a simple server for checking the operation
 1. Enter `https://localhost:5000/` in the URL field of your browser to access it
 1. Enter `>Tasks: Terminate Task` from the command palette and select `npm: serve-https` to terminate the simple server
@@ -147,34 +145,34 @@ Please refer to [CHANGELOG.md](CHANGELOG.md) for the changelog of this repositor
 
 ### Node.js
 
-* 22.2.0
-* 20.13.1
+* 23.10.0
+* 22.14.0
 
 
 ## Operation environment
 
 | Platform | Browser | Version |
 | --- | --- | --- |
-| Android | Google Chrome | 125.0.6422.113 |
+| Android | Google Chrome | 134.0.6998.96 |
 | Android | Microsoft Edge | 124.0.2478.104 |
 | Android | Mozilla Firefox | 126.0 |
 | iOS / iPadOS | Google Chrome | 125.0.6422.80 |
 | iOS / iPadOS | Microsoft Edge | 125.0.2535.60 |
 | iOS / iPadOS | Mozilla Firefox | 126.1 |
-| iOS / iPadOS | Safari | 17.4.1 |
+| iOS / iPadOS | Safari | 18.3.2 |
 | macOS | Google Chrome | 125.0.6422.113 |
 | macOS | Microsoft Edge | 125.0.2535.67 |
 | macOS | Mozilla Firefox | 126.0 |
-| macOS | Safari | 17.5 |
-| Windows | Google Chrome | 125.0.6422.113 |
-| Windows | Microsoft Edge | 125.0.2535.67 |
-| Windows | Mozilla Firefox | 126.0 |
+| macOS | Safari | 18.3.1 |
+| Windows | Google Chrome | 134.0.6998.119 |
+| Windows | Microsoft Edge | 134.0.3124.83 |
+| Windows | Mozilla Firefox | 136.0.2 |
 
 Note: You can start the server for operation check by running the `serve-https` script of `./Samples/TypeScript/Demo/package.json`.
 
 ### Cubism SDK for Web
 
-[Cubism 5 SDK for Web R1](https://github.com/Live2D/CubismWebSamples/releases/tag/5-r.1)
+[Cubism 5 SDK for Web R3](https://github.com/Live2D/CubismWebSamples/releases/tag/5-r.3)
 
 ## Sound device
 

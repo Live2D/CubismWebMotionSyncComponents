@@ -4,9 +4,9 @@
 
 # Notices
 
-## [Restrictions] Microphone sample operation on macOS Safari (2024-05-30)
+## [Restrictions] About microphone input in the sample on macOS Safari. (2024-05-30)
 
-We have identified an issue with the microphone sample project, in which the loopback audio may not play properly on macOS Safari.
+We have identified an issue where loopback audio may not play correctly when using microphone input in the sample on macOS Safari.
 
 This matter will be addressed in a future release. Please use a browser other than Safari.
 

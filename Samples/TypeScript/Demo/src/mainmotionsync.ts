@@ -6,8 +6,6 @@
  */
 
 import { LAppMotionSyncDelegate } from './lappmotionsyncdelegate';
-import * as LAppDefine from '@cubismsdksamples/lappdefine';
-import { LAppGlManager } from '@cubismsdksamples/lappglmanager';
 
 /**
  * ブラウザロード後の処理
@@ -28,10 +26,7 @@ window.addEventListener(
     }
 
     // Initialize WebGL and create the application instance
-    if (
-      !LAppGlManager.getInstance() ||
-      !LAppMotionSyncDelegate.getInstance().initialize()
-    ) {
+    if (!LAppMotionSyncDelegate.getInstance().initialize()) {
       return;
     }
 
@@ -46,18 +41,5 @@ window.addEventListener(
 window.addEventListener(
   'beforeunload',
   (): void => LAppMotionSyncDelegate.releaseInstance(),
-  { passive: true }
-);
-
-/**
- * Process when changing screen size.
- */
-window.addEventListener(
-  'resize',
-  () => {
-    if (LAppDefine.CanvasSize === 'auto') {
-      LAppMotionSyncDelegate.getInstance().onResize();
-    }
-  },
   { passive: true }
 );

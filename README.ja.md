@@ -93,7 +93,6 @@ Samplesの実行を行う場合は、追加で以下のファイル内の該当�
 * Samples/TypeScript/Demo/index.html
 * Samples/TypeScript/Demo/tsconfig.json
 * Samples/TypeScript/Demo/vite.config.mts
-* Samples/TypeScript/Demo/vite.config.microphone.mts
 * Samples/TypeScript/Demo/copy_resources.js
 
 ディレクトリ構成を任意のものに変更したい場合も、上記のファイルを編集することで適用することが出来ます。
@@ -114,8 +113,7 @@ Samplesの実行を行う場合は、追加で以下のファイル内の該当�
 コマンドパレット（*View > Command Palette...*）で `>Tasks: Run Task` を入力することで、タスク一覧が表示されます。
 
 1. タスク一覧から `npm: install - CubismWebMotionSyncComponents/Samples/TypeScript/Demo` を選択して依存パッケージのダウンロードを行います
-1. タスク一覧から `npm: build - CubismWebMotionSyncComponents/Samples/TypeScript/Demo` を選択してオーディオファイルを利用したサンプルデモのビルドを行います
-1. もしくは、タスク一覧から `npm: build:microphone - CubismWebMotionSyncComponents/Samples/TypeScript/Demo` を選択してマイク入力を利用したサンプルデモのビルドを行います
+1. タスク一覧から `npm: build - CubismWebMotionSyncComponents/Samples/TypeScript/Demo` を選択してサンプルデモのビルドを行います
 1. タスク一覧から `npm: serve - CubismWebMotionSyncComponents/Samples/TypeScript/Demo` を選択して動作確認用の簡易サーバを起動します
 1. ブラウザの URL 欄に `https://localhost:5000/` と入力してアクセスします 
 1. コマンドパレットから `>Tasks: Terminate Task` を入力して `npm: serve-https` を選択すると簡易サーバが終了します
@@ -148,34 +146,34 @@ NOTE: デバック用の設定は、`.vscode/launch.json` に記述していま�
 
 ### Node.js
 
-* 22.2.0
-* 20.13.1
+* 23.10.0
+* 22.14.0
 
 
 ## 動作確認環境
 
 | プラットフォーム | ブラウザ | バージョン |
 | --- | --- | --- |
-| Android | Google Chrome | 125.0.6422.113 |
+| Android | Google Chrome | 134.0.6998.96 |
 | Android | Microsoft Edge | 124.0.2478.104 |
 | Android | Mozilla Firefox | 126.0 |
 | iOS / iPadOS | Google Chrome | 125.0.6422.80 |
 | iOS / iPadOS | Microsoft Edge | 125.0.2535.60 |
 | iOS / iPadOS | Mozilla Firefox | 126.1 |
-| iOS / iPadOS | Safari | 17.4.1 |
+| iOS / iPadOS | Safari | 18.3.2 |
 | macOS | Google Chrome | 125.0.6422.113 |
 | macOS | Microsoft Edge | 125.0.2535.67 |
 | macOS | Mozilla Firefox | 126.0 |
-| macOS | Safari | 17.5 |
-| Windows | Google Chrome | 125.0.6422.113 |
-| Windows | Microsoft Edge | 125.0.2535.67 |
-| Windows | Mozilla Firefox | 126.0 |
+| macOS | Safari | 18.3.1 |
+| Windows | Google Chrome | 134.0.6998.119 |
+| Windows | Microsoft Edge | 134.0.3124.83 |
+| Windows | Mozilla Firefox | 136.0.2 |
 
 Note: 動作確認時のサーバの起動は `./Samples/TypeScript/Demo/package.json` の `serve-https` スクリプトを使用して行っています。
 
 ### Cubism SDK for Web
 
-[Cubism 5 SDK for Web R1](https://github.com/Live2D/CubismWebSamples/releases/tag/5-r.1)
+[Cubism 5 SDK for Web R3](https://github.com/Live2D/CubismWebSamples/releases/tag/5-r.3)
 
 ## サウンドデバイス
 

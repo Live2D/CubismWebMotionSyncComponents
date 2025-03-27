@@ -11,8 +11,8 @@ This is a sample implementation of an application implemented with TypeScript.
 
 | Package | Version |
 | --- | --- |
-| TypeScript | 5.4.3 |
-| Vite | 5.2.7 |
+| TypeScript | 5.8.2 |
+| Vite | 6.2.0 |
 
 For other packages, check the `package.json` for each project.
 For other development environments and operation environments, see [README.md](/README.md) in the top directory.
@@ -20,7 +20,7 @@ For other development environments and operation environments, see [README.md](/
 
 ## Task list
 
-### `npm: start` (`npm: start:microphone`)
+### `npm: start`
 
 Starts a local server for development and creates a project monitor build.
 Any changes you make to the project will automatically rebuild and cause the browser to reload.
@@ -28,23 +28,17 @@ You can debug in Visual Studio Code from [Debug Project].
 
 To terminate in Visual Studio Code, type `>Tasks: Terminate Task` and select the task from the command palette.
 
-*`start:microphone` is the microphone input version.
-
-### `npm: build` (`npm: build:microphone`)
+### `npm: build`
 
 Outputs a TypeScript build deliverable to the `dist` directory.
 The output is a JavaScript file that has been bundled into one using Vite.
 
 You can change the settings by editing `tsconfig.json` and `vite.config.mts`.
 
-*`build:microphone` is the microphone input version.
-
-### `npm: build:prod` (`npm: build:prod:microphone`)
+### `npm: build:prod`
 
 Creates above build after optimizing it.
 It is used to output deliverables for production environments as it reduces the build size.
-
-*`build:prod:microphone` is the microphone input version.
 
 ### `npm: test`
 

@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 
+## 2024-11-28
+
+### Removed
+
+* [Unity,Native] Remove Android ARM v7 library.
+
+
 ## 2023-11-30
 
 ### Added

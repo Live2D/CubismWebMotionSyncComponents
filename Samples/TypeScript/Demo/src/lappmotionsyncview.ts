@@ -7,16 +7,13 @@
 
 import { CubismMatrix44 } from '@framework/math/cubismmatrix44';
 import { CubismViewMatrix } from '@framework/math/cubismviewmatrix';
-
 import * as LAppDefine from '@cubismsdksamples/lappdefine';
 import * as LAppMotionSyncDefine from './lappmotionsyncdefine';
-import { canvas, gl } from '@cubismsdksamples/lappglmanager';
-import { LAppMotionSyncDelegate } from './lappmotionsyncdelegate';
-import { LAppSprite } from '@cubismsdksamples/lappsprite';
+import { LAppMotionSyncSprite } from './lappmotionsyncsprite';
 import { TextureInfo } from '@cubismsdksamples/lapptexturemanager';
-import { LAppMotionSyncLive2DManager } from './lappmotionsynclive2dmanager';
 import { LAppPal } from '@cubismsdksamples/lapppal';
 import { TouchManager } from '@cubismsdksamples/touchmanager';
+import { LAppMotionSyncSubdelegate } from './lappmotionsyncsubdelegate';
 
 /**
  * 描画クラス。
@@ -25,7 +22,7 @@ export class LAppMotionSyncView {
   /**
    * コンストラクタ
    */
-  constructor() {
+  public constructor() {
     this._programId = null;
     this._back = null;
     this._gear = null;
@@ -44,8 +41,9 @@ export class LAppMotionSyncView {
   /**
    * 初期化する。
    */
-  public initialize(): void {
-    const { width, height } = canvas;
+  public initialize(subdelegate: LAppMotionSyncSubdelegate): void {
+    this._subdelegate = subdelegate;
+    const { width, height } = subdelegate.getCanvas();
 
     const ratio: number = width / height;
     const left: number = -ratio;
@@ -96,7 +94,7 @@ export class LAppMotionSyncView {
     this._back.release();
     this._back = null;
 
-    gl.deleteProgram(this._programId);
+    this._subdelegate.getGlManager().getGl().deleteProgram(this._programId);
     this._programId = null;
   }
 
@@ -104,7 +102,7 @@ export class LAppMotionSyncView {
    * 描画する。
    */
   public render(): void {
-    gl.useProgram(this._programId);
+    this._subdelegate.getGlManager().getGl().useProgram(this._programId);
 
     if (this._back) {
       this._back.render(this._programId);
@@ -116,25 +114,24 @@ export class LAppMotionSyncView {
       this._fastForward.render(this._programId);
     }
 
-    gl.flush();
+    this._subdelegate.getGlManager().getGl().flush();
 
-    const live2DManager: LAppMotionSyncLive2DManager =
-      LAppMotionSyncLive2DManager.getInstance();
+    const lapplive2dmanager = this._subdelegate.getLive2DManager();
+    if (lapplive2dmanager != null) {
+      lapplive2dmanager.setViewMatrix(this._viewMatrix);
 
-    live2DManager.setViewMatrix(this._viewMatrix);
-
-    live2DManager.onUpdate();
+      lapplive2dmanager.onUpdate();
+    }
   }
 
   /**
    * 画像の初期化を行う。
    */
   public initializeSprite(): void {
-    const width: number = canvas.width;
-    const height: number = canvas.height;
+    const width: number = this._subdelegate.getCanvas().width;
+    const height: number = this._subdelegate.getCanvas().height;
+    const textureManager = this._subdelegate.getTextureManager();
 
-    const textureManager =
-      LAppMotionSyncDelegate.getInstance().getTextureManager();
     const resourcesPath = LAppDefine.ResourcesPath;
 
     let imageName = '';
@@ -149,7 +146,14 @@ export class LAppMotionSyncView {
 
       const fwidth = textureInfo.width * 2.0;
       const fheight = height * 0.95;
-      this._back = new LAppSprite(x, y, fwidth, fheight, textureInfo.id);
+      this._back = new LAppMotionSyncSprite(
+        x,
+        y,
+        fwidth,
+        fheight,
+        textureInfo.id
+      );
+      this._back.setMotionSyncSubdelegate(this._subdelegate);
     };
 
     textureManager.createTextureFromPngFile(
@@ -165,7 +169,14 @@ export class LAppMotionSyncView {
       const y = height - textureInfo.height * 0.5;
       const fwidth = textureInfo.width;
       const fheight = textureInfo.height;
-      this._gear = new LAppSprite(x, y, fwidth, fheight, textureInfo.id);
+      this._gear = new LAppMotionSyncSprite(
+        x,
+        y,
+        fwidth,
+        fheight,
+        textureInfo.id
+      );
+      this._gear.setMotionSyncSubdelegate(this._subdelegate);
     };
 
     textureManager.createTextureFromPngFile(
@@ -181,7 +192,14 @@ export class LAppMotionSyncView {
       const y = height - textureInfo.height * 0.5;
       const fwidth = textureInfo.width;
       const fheight = textureInfo.height;
-      this._fastForward = new LAppSprite(x, y, fwidth, fheight, textureInfo.id);
+      this._fastForward = new LAppMotionSyncSprite(
+        x,
+        y,
+        fwidth,
+        fheight,
+        textureInfo.id
+      );
+      this._fastForward.setMotionSyncSubdelegate(this._subdelegate);
     };
 
     textureManager.createTextureFromPngFile(
@@ -192,7 +210,7 @@ export class LAppMotionSyncView {
 
     // シェーダーを作成
     if (this._programId == null) {
-      this._programId = LAppMotionSyncDelegate.getInstance().createShader();
+      this._programId = this._subdelegate.createShader();
     }
   }
 
@@ -216,13 +234,10 @@ export class LAppMotionSyncView {
    * @param pointY スクリーンY座標
    */
   public onTouchesMoved(pointX: number, pointY: number): void {
-    const viewX: number = this.transformViewX(this._touchManager.getX());
-    const viewY: number = this.transformViewY(this._touchManager.getY());
+    const posX = pointX * window.devicePixelRatio;
+    const posY = pointY * window.devicePixelRatio;
 
-    this._touchManager.touchesMoved(
-      pointX * window.devicePixelRatio,
-      pointY * window.devicePixelRatio
-    );
+    this._touchManager.touchesMoved(posX, posY);
   }
 
   /**
@@ -233,42 +248,28 @@ export class LAppMotionSyncView {
    */
   public onTouchesEnded(pointX: number, pointY: number): void {
     // タッチ終了
-    const live2DManager: LAppMotionSyncLive2DManager =
-      LAppMotionSyncLive2DManager.getInstance();
+    const posX = pointX * window.devicePixelRatio;
+    const posY = pointY * window.devicePixelRatio;
 
-    {
-      // シングルタップ
-      const x: number = this._deviceToScreen.transformX(
-        this._touchManager.getX()
-      ); // 論理座標変換した座標を取得。
-      const y: number = this._deviceToScreen.transformY(
-        this._touchManager.getY()
-      ); // 論理座標変化した座標を取得。
+    const lapplive2dmanager = this._subdelegate.getLive2DManager();
 
-      if (LAppDefine.DebugTouchLogEnable) {
-        LAppPal.printMessage(`[APP]touchesEnded x: ${x} y: ${y}`);
-      }
-      live2DManager.onTap(x, y);
+    // シングルタップ
+    const x: number = this.transformViewX(posX);
+    const y: number = this.transformViewY(posY);
 
-      // 歯車にタップしたか
-      if (
-        this._gear.isHit(
-          pointX * window.devicePixelRatio,
-          pointY * window.devicePixelRatio
-        )
-      ) {
-        live2DManager.nextScene();
-      }
+    if (LAppDefine.DebugTouchLogEnable) {
+      LAppPal.printMessage(`[APP]touchesEnded x: ${x} y: ${y}`);
+    }
+    lapplive2dmanager.onTap(x, y);
 
-      // 音声遷移にタップしたか
-      if (
-        this._fastForward.isHit(
-          pointX * window.devicePixelRatio,
-          pointY * window.devicePixelRatio
-        )
-      ) {
-        live2DManager.changeNextIndexSound();
-      }
+    // 歯車にタップしたか
+    if (this._gear.isHit(posX, posY)) {
+      lapplive2dmanager.nextScene();
+    }
+
+    // 音声遷移にタップしたか
+    if (this._fastForward.isHit(posX, posY)) {
+      lapplive2dmanager.changeNextIndexSound();
     }
   }
 
@@ -313,9 +314,10 @@ export class LAppMotionSyncView {
   _deviceToScreen: CubismMatrix44; // デバイスからスクリーンへの行列
   _viewMatrix: CubismViewMatrix; // viewMatrix
   _programId: WebGLProgram; // シェーダID
-  _back: LAppSprite; // 背景画像
-  _gear: LAppSprite; // ギア画像
-  _fastForward: LAppSprite; ///< 早送り画像
+  _back: LAppMotionSyncSprite; // 背景画像
+  _gear: LAppMotionSyncSprite; // ギア画像
+  _fastForward: LAppMotionSyncSprite; ///< 早送り画像
   _changeModel: boolean; // モデル切り替えフラグ
   _isClick: boolean; // クリック中
+  private _subdelegate: LAppMotionSyncSubdelegate;
 }

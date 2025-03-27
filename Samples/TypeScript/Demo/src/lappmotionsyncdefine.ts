@@ -29,3 +29,5 @@ export const Channels = 2;
 export const SamplesPerSec = 48000;
 // ビット深度
 export const BitDepth = 16;
+// マイク入力を使用するモデル (0未満で未使用)
+export const UseMicrophoneCanvas = 0;

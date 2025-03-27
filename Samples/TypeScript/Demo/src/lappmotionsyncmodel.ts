@@ -20,14 +20,14 @@ import {
 
 import * as LAppDefine from '@cubismsdksamples/lappdefine';
 import * as LAppMotionSyncDefine from './lappmotionsyncdefine';
-import { frameBuffer, LAppMotionSyncDelegate } from './lappmotionsyncdelegate';
 import { LAppPal } from '@cubismsdksamples/lapppal';
 import { TextureInfo } from '@cubismsdksamples/lapptexturemanager';
 import { CubismMoc } from '@framework/model/cubismmoc';
 import { CubismModelMotionSyncSettingJson } from '@motionsyncframework/cubismmodelmotionsyncsettingjson';
 import { LAppAudioManager } from './lappaudiomanager';
 import { CubismMotionSync } from '@motionsyncframework/live2dcubismmotionsync';
-import { canvas, gl } from '@cubismsdksamples/lappglmanager';
+import { LAppMotionSyncSubdelegate } from './lappmotionsyncsubdelegate';
+import { ILAppAudioBufferProvider } from './lappiaudiobufferprovider';
 
 enum LoadStep {
   LoadAssets,
@@ -188,7 +188,9 @@ export class LAppMotionSyncModel extends CubismUserModel {
 
             this.createRenderer();
             this.setupTextures();
-            this.getRenderer().startUp(gl);
+            this.getRenderer().startUp(
+              this._subdelegate.getGlManager().getGl()
+            );
           });
       }
     };
@@ -253,7 +255,7 @@ export class LAppMotionSyncModel extends CubismUserModel {
         };
 
         // 読み込み
-        LAppMotionSyncDelegate.getInstance()
+        this._subdelegate
           .getTextureManager()
           .createTextureFromPngFile(texturePath, usePremultiply, onLoad);
         this.getRenderer().setIsPremultipliedAlpha(usePremultiply);
@@ -430,6 +432,26 @@ export class LAppMotionSyncModel extends CubismUserModel {
     }
   }
 
+  private updateMotionSyncForProvider(): void {
+    if (!this._audioBufferProvider) {
+      return;
+    }
+
+    // 現在フレームの時間を秒単位で取得
+    // NOTE: ブラウザやブラウザ側の設定により、performance.now() の精度が異なる可能性に注意
+    const audioDeltaTime = performance.now() / 1000.0; // convert to seconds.
+
+    // サウンドバッファの設定
+    this._motionSync.setSoundBuffer(
+      0,
+      this._audioBufferProvider.getBuffer(),
+      0
+    );
+
+    // モーションシンクの更新
+    this._motionSync.updateParameters(this._model, audioDeltaTime);
+  }
+
   /**
    * 更新
    */
@@ -451,6 +473,8 @@ export class LAppMotionSyncModel extends CubismUserModel {
 
     if (this._soundData.isPlayByIndex(this._soundIndex)) {
       this.updateMotionSync();
+    } else {
+      this.updateMotionSyncForProvider();
     }
 
     this._model.update();
@@ -496,9 +520,13 @@ export class LAppMotionSyncModel extends CubismUserModel {
     if (this._model == null) return;
 
     // キャンバスサイズを渡す
+    const canvas = this._subdelegate.getCanvas();
     const viewport: number[] = [0, 0, canvas.width, canvas.height];
 
-    this.getRenderer().setRenderState(frameBuffer, viewport);
+    this.getRenderer().setRenderState(
+      this._subdelegate.getFrameBuffer(),
+      viewport
+    );
     this.getRenderer().drawModel();
   }
 
@@ -571,6 +599,7 @@ export class LAppMotionSyncModel extends CubismUserModel {
     this._soundIndex = 0;
     this._soundData = new LAppAudioManager();
     this._lastSampleCount = 0;
+    this._audioBufferProvider = null;
   }
 
   public override release(): void {
@@ -592,6 +621,18 @@ export class LAppMotionSyncModel extends CubismUserModel {
     }
   }
 
+  public setSubdelegate(subdelegate: LAppMotionSyncSubdelegate): void {
+    this._subdelegate = subdelegate;
+  }
+
+  public getProvider(): ILAppAudioBufferProvider {
+    return this._audioBufferProvider;
+  }
+
+  public setProvider(audioBuffer: ILAppAudioBufferProvider): void {
+    this._audioBufferProvider = audioBuffer;
+  }
+
   _modelSetting: CubismModelMotionSyncSettingJson; // モデルセッティング情報
   _modelHomeDir: string; // モデルセッティングが置かれたディレクトリ
   _userTimeSeconds: number; // デルタ時間の積算値[秒]
@@ -611,4 +652,8 @@ export class LAppMotionSyncModel extends CubismUserModel {
   _soundData: LAppAudioManager; // 音声管理
   _motionSync: CubismMotionSync; // モーションシンク
   _lastSampleCount: number; // 最後にサンプリングしたフレーム数
+
+  _subdelegate: LAppMotionSyncSubdelegate; // サブデリゲート
+
+  private _audioBufferProvider: ILAppAudioBufferProvider; // 音声バッファ
 }
