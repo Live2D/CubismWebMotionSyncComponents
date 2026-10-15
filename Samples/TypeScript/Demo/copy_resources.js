@@ -14,6 +14,7 @@ const publicResources = [
   {src: '../../../Core/CRI/live2dcubismmotionsynccore.js.map', dst: './public/Core/CRI/live2dcubismmotionsynccore.js.map'},
   {src: 'src/lappaudioworkletprocessor.js', dst: './public/src/lappaudioworkletprocessor.js'},
   {src: '../../Resources', dst: './public/Resources'},
+  {src:'../../../../CubismSdkForWeb/Framework/Shaders', dst: './public/Framework/Shaders'},
 ];
 
 publicResources.forEach((e)=>{if (fs.existsSync(e.dst)) fs.rmSync(e.dst, { recursive: true })});

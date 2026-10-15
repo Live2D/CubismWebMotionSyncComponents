@@ -7,7 +7,6 @@
 
 import { LogLevel } from '@framework/live2dcubismframework';
 import { CubismModel } from '@framework/model/cubismmodel';
-import { csmVector } from '@framework/type/csmvector';
 import {
   CSM_ASSERT,
   CubismLogInfo,
@@ -164,8 +163,8 @@ export class CubismMotionSync {
       return null;
     }
 
-    const processorList: csmVector<ICubismMotionSyncProcessor> =
-      new csmVector<ICubismMotionSyncProcessor>();
+    const processorList: Array<ICubismMotionSyncProcessor> =
+      new Array<ICubismMotionSyncProcessor>();
 
     for (let index = 0; index < data.getSettingCount(); index++) {
       let processor: ICubismMotionSyncProcessor = null;
@@ -188,7 +187,7 @@ export class CubismMotionSync {
       }
 
       if (processor != null) {
-        processorList.pushBack(processor);
+        processorList.push(processor);
       }
     }
 
@@ -231,7 +230,7 @@ export class CubismMotionSync {
     let processor: CubismMotionSyncProcessorCRI = null;
     if (engine) {
       processor = (engine as CubismMotionSyncEngineCri).CreateProcessor(
-        data.getSetting(index).cubismParameterList.getSize(),
+        data.getSetting(index).cubismParameterList.length,
         data.getMappingInfoList(index),
         samplePerSec
       );
@@ -250,15 +249,15 @@ export class CubismMotionSync {
 
   public setSoundBuffer(
     processIndex: number,
-    buffer: csmVector<number>,
+    buffer: Array<number>,
     startIndex: number
   ): void {
     if (!CubismMotionSync.isInitialized()) {
       return;
     }
-    if (processIndex < this._processorInfoList.getSize()) {
-      this._processorInfoList.at(processIndex)._sampleBuffer = buffer;
-      this._processorInfoList.at(processIndex)._sampleBufferIndex = startIndex;
+    if (processIndex < this._processorInfoList.length) {
+      this._processorInfoList[processIndex]._sampleBuffer = buffer;
+      this._processorInfoList[processIndex]._sampleBufferIndex = startIndex;
     }
   }
 
@@ -267,8 +266,8 @@ export class CubismMotionSync {
       return;
     }
     CubismMotionSyncData.delete(this._data);
-    for (let index = 0; index < this._processorInfoList.getSize(); index++) {
-      this._processorInfoList.at(index)._processor?.Close();
+    for (let index = 0; index < this._processorInfoList.length; index++) {
+      this._processorInfoList[index]._processor?.Close();
     }
   }
 
@@ -283,50 +282,46 @@ export class CubismMotionSync {
 
     for (
       let processIndex = 0;
-      processIndex < this._processorInfoList.getSize();
+      processIndex < this._processorInfoList.length;
       processIndex++
     ) {
-      this._processorInfoList.at(processIndex)._currentRemainTime +=
+      this._processorInfoList[processIndex]._currentRemainTime +=
         deltaTimeSeconds;
 
       // Check each time assuming it may have been updated.
-      const fps: number = this._processorInfoList.at(processIndex)._sampleRate;
+      const fps: number = this._processorInfoList[processIndex]._sampleRate;
       const processorDeltaTime: number = 1.0 / fps;
 
-      this._processorInfoList.at(processIndex)._lastTotalProcessedCount = 0;
+      this._processorInfoList[processIndex]._lastTotalProcessedCount = 0;
 
       // If the specified frame time is not reached, no analysis is performed.
       if (
-        this._processorInfoList.at(processIndex)._currentRemainTime <
+        this._processorInfoList[processIndex]._currentRemainTime <
         processorDeltaTime
       ) {
         for (
           let targetIndex = 0;
           targetIndex <
-          this._data.getSetting(processIndex).cubismParameterList.getSize();
+          this._data.getSetting(processIndex).cubismParameterList.length;
           targetIndex++
         ) {
           if (
             isNaN(
-              this._processorInfoList
-                .at(processIndex)
-                ._analysisResult.getValues()[targetIndex]
+              this._processorInfoList[processIndex]._analysisResult.getValues()[
+                targetIndex
+              ]
             ) ||
-            this._data
-              .getSetting(processIndex)
-              .cubismParameterList.at(targetIndex).parameterIndex < 0
+            this._data.getSetting(processIndex).cubismParameterList[targetIndex]
+              .parameterIndex < 0
           ) {
             continue;
           }
 
           // Overwrite parameter values every frame to prevent data from replacing itself
           model.setParameterValueByIndex(
-            this._data
-              .getSetting(processIndex)
-              .cubismParameterList.at(targetIndex).parameterIndex,
-            this._processorInfoList
-              .at(processIndex)
-              ._lastDampedList.at(targetIndex)
+            this._data.getSetting(processIndex).cubismParameterList[targetIndex]
+              .parameterIndex,
+            this._processorInfoList[processIndex]._lastDampedList[targetIndex]
           );
         }
         continue;
@@ -335,38 +330,33 @@ export class CubismMotionSync {
       this.analyze(model, processIndex);
 
       // Reset counter.
-      this._processorInfoList.at(processIndex)._currentRemainTime =
-        CubismMath.mod(
-          this._processorInfoList.at(processIndex)._currentRemainTime,
-          processorDeltaTime
-        );
+      this._processorInfoList[processIndex]._currentRemainTime = CubismMath.mod(
+        this._processorInfoList[processIndex]._currentRemainTime,
+        processorDeltaTime
+      );
 
       for (
         let targetIndex = 0;
         targetIndex <
-        this._data.getSetting(processIndex).cubismParameterList.getSize();
+        this._data.getSetting(processIndex).cubismParameterList.length;
         targetIndex++
       ) {
         if (
           isNaN(
-            this._processorInfoList
-              .at(processIndex)
-              ._analysisResult.getValues()[targetIndex]
+            this._processorInfoList[processIndex]._analysisResult.getValues()[
+              targetIndex
+            ]
           ) ||
-          this._data
-            .getSetting(processIndex)
-            .cubismParameterList.at(targetIndex).parameterIndex < 0
+          this._data.getSetting(processIndex).cubismParameterList[targetIndex]
+            .parameterIndex < 0
         ) {
           continue;
         }
         // Overwrite parameter values every frame to prevent data from replacing itself
         model.setParameterValueByIndex(
-          this._data
-            .getSetting(processIndex)
-            .cubismParameterList.at(targetIndex).parameterIndex,
-          this._processorInfoList
-            .at(processIndex)
-            ._lastDampedList.at(targetIndex)
+          this._data.getSetting(processIndex).cubismParameterList[targetIndex]
+            .parameterIndex,
+          this._processorInfoList[processIndex]._lastDampedList[targetIndex]
         );
       }
     }
@@ -377,15 +367,15 @@ export class CubismMotionSync {
       return;
     }
     const processor: ICubismMotionSyncProcessor =
-      this._processorInfoList.at(processIndex)._processor;
-    const samples: csmVector<number> =
-      this._processorInfoList.at(processIndex)._sampleBuffer;
+      this._processorInfoList[processIndex]._processor;
+    const samples: Array<number> =
+      this._processorInfoList[processIndex]._sampleBuffer;
     let beginIndex: number =
-      this._processorInfoList.at(processIndex)._sampleBufferIndex;
+      this._processorInfoList[processIndex]._sampleBufferIndex;
 
     if (
       processor == null ||
-      this._processorInfoList.at(processIndex)._sampleBuffer == null
+      this._processorInfoList[processIndex]._sampleBuffer == null
     ) {
       return;
     }
@@ -393,13 +383,12 @@ export class CubismMotionSync {
     let analysisResult: CubismMotionSyncEngineAnalysisResult = null;
 
     const blendRatio: number =
-      this._processorInfoList.at(processIndex)._blendRatio;
-    const smoothing: number =
-      this._processorInfoList.at(processIndex)._smoothing;
+      this._processorInfoList[processIndex]._blendRatio;
+    const smoothing: number = this._processorInfoList[processIndex]._smoothing;
     const audioLevelEffectRatio: number =
-      this._processorInfoList.at(processIndex)._audioLevelEffectRatio;
+      this._processorInfoList[processIndex]._audioLevelEffectRatio;
 
-    const samplesSize = samples.getSize();
+    const samplesSize = samples.length;
     let requireSampleCount = processor.getRequireSampleCount();
 
     for (let i = 0; i < samplesSize; i += requireSampleCount) {
@@ -419,7 +408,7 @@ export class CubismMotionSync {
             blendRatio,
             smoothing,
             audioLevelEffectRatio,
-            this._processorInfoList.at(processIndex)._analysisResult
+            this._processorInfoList[processIndex]._analysisResult
           );
           break;
         default:
@@ -433,14 +422,14 @@ export class CubismMotionSync {
       const processedCount = analysisResult.getProcessedSampleCount();
       beginIndex += processedCount;
 
-      this._processorInfoList.at(processIndex)._lastTotalProcessedCount +=
+      this._processorInfoList[processIndex]._lastTotalProcessedCount +=
         processedCount;
 
       // モーションシンクライブラリで計算した内容をモデルに反映
       for (
         let targetIndex = 0;
         targetIndex <
-        this._data.getSetting(processIndex).cubismParameterList.getSize();
+        this._data.getSetting(processIndex).cubismParameterList.length;
         targetIndex++
       ) {
         let cacheValue: number = analysisResult.getValues()[targetIndex];
@@ -449,41 +438,36 @@ export class CubismMotionSync {
           continue;
         }
 
-        const smooth: number = this._data
-          .getSetting(processIndex)
-          .cubismParameterList.at(targetIndex).smooth;
-        const damper: number = this._data
-          .getSetting(processIndex)
-          .cubismParameterList.at(targetIndex).damper;
+        const smooth: number =
+          this._data.getSetting(processIndex).cubismParameterList[targetIndex]
+            .smooth;
+        const damper: number =
+          this._data.getSetting(processIndex).cubismParameterList[targetIndex]
+            .damper;
 
         // Smoothing
         cacheValue =
           ((100.0 - smooth) * cacheValue +
-            this._processorInfoList
-              .at(processIndex)
-              ._lastSmoothedList.at(targetIndex) *
+            this._processorInfoList[processIndex]._lastSmoothedList[
+              targetIndex
+            ] *
               smooth) /
           100.0;
-        this._processorInfoList
-          .at(processIndex)
-          ._lastSmoothedList.set(targetIndex, cacheValue);
+        this._processorInfoList[processIndex]._lastSmoothedList[targetIndex] =
+          cacheValue;
 
         // Dampening
         if (
           Math.abs(
             cacheValue -
-              this._processorInfoList
-                .at(processIndex)
-                ._lastDampedList.at(targetIndex)
+              this._processorInfoList[processIndex]._lastDampedList[targetIndex]
           ) < damper
         ) {
-          cacheValue = this._processorInfoList
-            .at(processIndex)
-            ._lastDampedList.at(targetIndex);
+          cacheValue =
+            this._processorInfoList[processIndex]._lastDampedList[targetIndex];
         }
-        this._processorInfoList
-          .at(processIndex)
-          ._lastDampedList.set(targetIndex, cacheValue);
+        this._processorInfoList[processIndex]._lastDampedList[targetIndex] =
+          cacheValue;
       }
 
       requireSampleCount = processor.getRequireSampleCount();
@@ -494,8 +478,8 @@ export class CubismMotionSync {
     if (!CubismMotionSync.isInitialized()) {
       return;
     }
-    if (processIndex < this._processorInfoList.getSize()) {
-      this._processorInfoList.at(processIndex)._blendRatio = blendRatio;
+    if (processIndex < this._processorInfoList.length) {
+      this._processorInfoList[processIndex]._blendRatio = blendRatio;
     }
   }
 
@@ -503,8 +487,8 @@ export class CubismMotionSync {
     if (!CubismMotionSync.isInitialized()) {
       return;
     }
-    if (processIndex < this._processorInfoList.getSize()) {
-      this._processorInfoList.at(processIndex)._smoothing = smoothing;
+    if (processIndex < this._processorInfoList.length) {
+      this._processorInfoList[processIndex]._smoothing = smoothing;
     }
   }
 
@@ -512,8 +496,8 @@ export class CubismMotionSync {
     if (!CubismMotionSync.isInitialized()) {
       return;
     }
-    if (processIndex < this._processorInfoList.getSize()) {
-      this._processorInfoList.at(processIndex)._sampleRate = sampleRate;
+    if (processIndex < this._processorInfoList.length) {
+      this._processorInfoList[processIndex]._sampleRate = sampleRate;
     }
   }
 
@@ -522,30 +506,30 @@ export class CubismMotionSync {
   }
 
   public getLastTotalProcessedCount(processIndex: number): number {
-    return this._processorInfoList.at(processIndex)._lastTotalProcessedCount;
+    return this._processorInfoList[processIndex]._lastTotalProcessedCount;
   }
 
   private constructor(
     model: CubismModel,
     data: CubismMotionSyncData,
-    processorList: csmVector<ICubismMotionSyncProcessor>
+    processorList: Array<ICubismMotionSyncProcessor>
   ) {
     this._data = data;
-    this._processorInfoList = new csmVector<CubismProcessorInfo>();
+    this._processorInfoList = new Array<CubismProcessorInfo>();
 
-    for (let index = 0; index < processorList?.getSize(); index++) {
-      this._processorInfoList.pushBack(
+    for (let index = 0; index < processorList?.length; index++) {
+      this._processorInfoList.push(
         new CubismProcessorInfo(
-          processorList.at(index),
+          processorList[index],
           model,
           data.getSetting(index)
         )
       );
-      this._processorInfoList.at(index).init(data.getSetting(index));
+      this._processorInfoList[index].init(data.getSetting(index));
     }
   }
 
-  private _processorInfoList: csmVector<CubismProcessorInfo>;
+  private _processorInfoList: Array<CubismProcessorInfo>;
   private _data: CubismMotionSyncData;
 }
 
@@ -583,26 +567,22 @@ export class CubismProcessorInfo {
 
   public init(setting: CubismMotionSyncDataSetting): void {
     this._currentRemainTime = 0.0;
-    this._lastSmoothedList = new csmVector<number>();
-    this._lastDampedList = new csmVector<number>();
+    this._lastSmoothedList = new Array<number>();
+    this._lastDampedList = new Array<number>();
 
-    for (
-      let index = 0;
-      index < setting.cubismParameterList.getSize();
-      index++
-    ) {
+    for (let index = 0; index < setting.cubismParameterList.length; index++) {
       let parameterValue: number = 0;
 
       // パラメータが存在する場合は値を取得
       // HACK: Listのインデックスを合わせるため、continueしない。
-      if (setting.cubismParameterList.at(index).parameterIndex >= 0) {
+      if (setting.cubismParameterList[index].parameterIndex >= 0) {
         parameterValue = this._model.getParameterValueByIndex(
-          setting.cubismParameterList.at(index).parameterIndex
+          setting.cubismParameterList[index].parameterIndex
         );
       }
 
-      this._lastSmoothedList.pushBack(parameterValue);
-      this._lastDampedList.pushBack(parameterValue);
+      this._lastSmoothedList.push(parameterValue);
+      this._lastDampedList.push(parameterValue);
     }
 
     this._blendRatio = setting.blendRatio;
@@ -617,13 +597,13 @@ export class CubismProcessorInfo {
   _smoothing: number;
   _sampleRate: number;
   _audioLevelEffectRatio: number; // Unused
-  _sampleBuffer: csmVector<number>;
+  _sampleBuffer: Array<number>;
   _sampleBufferIndex: number;
   _model: CubismModel;
   _analysisResult: CubismMotionSyncEngineAnalysisResult;
   _currentRemainTime: number;
-  _lastSmoothedList: csmVector<number>;
-  _lastDampedList: csmVector<number>;
+  _lastSmoothedList: Array<number>;
+  _lastDampedList: Array<number>;
   _lastTotalProcessedCount: number;
 }
 

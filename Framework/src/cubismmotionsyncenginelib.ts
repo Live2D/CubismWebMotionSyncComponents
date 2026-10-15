@@ -5,8 +5,6 @@
  * that can be found at https://www.live2d.com/eula/live2d-open-software-license-agreement_en.html.
  */
 
-import { csmString } from '@framework/type/csmstring';
-import { csmVector } from '@framework/type/csmvector';
 import { CubismLogInfo, CubismLogWarning } from '@framework/utils/cubismdebug';
 import { EngineType, MappingInfoListMapper } from './cubismmotionsyncutil';
 import { CubismMotionSyncEngineAnalysisResult } from './cubismmotionsyncengineanalysisresult';
@@ -24,10 +22,8 @@ export class CubismMotionSyncEngineLib {
     return Live2DCubismMotionSyncCore.CubismMotionSyncEngine.csmMotionSyncGetEngineVersion();
   }
 
-  public getEngineName(): csmString {
-    return new csmString(
-      Live2DCubismMotionSyncCore.CubismMotionSyncEngine.csmMotionSyncGetEngineName()
-    );
+  public getEngineName(): string {
+    return Live2DCubismMotionSyncCore.CubismMotionSyncEngine.csmMotionSyncGetEngineName();
   }
 
   public initializeEngine(engineConfig: number): boolean {

@@ -11,8 +11,8 @@ This is a sample implementation of an application implemented with TypeScript.
 
 | Package | Version |
 | --- | --- |
-| TypeScript | 5.8.2 |
-| Vite | 6.2.0 |
+| TypeScript | 5.9.3 |
+| Vite | 8.0.2 |
 
 For other packages, check the `package.json` for each project.
 For other development environments and operation environments, see [README.md](/README.md) in the top directory.

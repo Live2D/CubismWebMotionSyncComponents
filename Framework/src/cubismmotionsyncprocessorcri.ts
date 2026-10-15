@@ -5,7 +5,6 @@
  * that can be found at https://www.live2d.com/eula/live2d-open-software-license-agreement_en.html.
  */
 
-import { csmVector } from '@framework/type/csmvector';
 import { CubismLogError } from '@framework/utils/cubismdebug';
 import { CubismMotionSyncEngineAnalysisResult } from './cubismmotionsyncengineanalysisresult';
 import { CubismMotionSyncEngineMappingInfo } from './cubismmotionsyncenginemappinginfo';
@@ -25,14 +24,14 @@ export class CubismMotionSyncProcessorCRI extends ICubismMotionSyncProcessor {
   }
 
   public Analyze(
-    samples: csmVector<number>,
+    samples: Array<number>,
     beginIndex: number,
     blendRatio: number,
     smoothing: number,
     audioLevelEffectRatio: number,
     analysisResult: CubismMotionSyncEngineAnalysisResult
   ): CubismMotionSyncEngineAnalysisResult {
-    const samplesSize = samples.getSize();
+    const samplesSize = samples.length;
     if (
       samplesSize <
       this.getEngine()
@@ -45,7 +44,7 @@ export class CubismMotionSyncProcessorCRI extends ICubismMotionSyncProcessor {
       return null;
     }
 
-    if (!(0 <= beginIndex && beginIndex < samples.getSize())) {
+    if (!(0 <= beginIndex && beginIndex < samples.length)) {
       CubismLogError(
         'The value of beginIndex is incorrect. It should be less than the length of samples.'
       );
@@ -139,7 +138,7 @@ export class CubismMotionSyncProcessorCRI extends ICubismMotionSyncProcessor {
       .getEngineHandle()
       .analyze(
         this.getContextHandle().getContext(),
-        samples._ptr,
+        samples,
         beginIndex,
         samplesSize - beginIndex,
         this._analysisResultNativePtr,
@@ -160,7 +159,7 @@ export class CubismMotionSyncProcessorCRI extends ICubismMotionSyncProcessor {
   public constructor(
     engine: ICubismMotionSyncEngine,
     contextHandle: MotionSyncContext,
-    mappingList: csmVector<CubismMotionSyncEngineMappingInfo>,
+    mappingList: Array<CubismMotionSyncEngineMappingInfo>,
     sampleRate: number,
     bitDepth: number
   ) {

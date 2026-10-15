@@ -5,7 +5,6 @@
  * that can be found at https://www.live2d.com/eula/live2d-open-software-license-agreement_en.html.
  */
 
-import { csmVector } from '@framework/type/csmvector';
 import { CubismMotionSyncContext } from './cubismmotionsyncenginelib';
 import {
   CubismMotionSyncEngineMappingInfo,
@@ -40,27 +39,27 @@ export class MappingInfoListMapper {
   }
 
   public setJObject(
-    mappingInfoList: csmVector<CubismMotionSyncEngineMappingInfo>
+    mappingInfoList: Array<CubismMotionSyncEngineMappingInfo>
   ): void {
     this.deleteMappingInfoList();
-    this._infoBufferList = new csmVector<Float32Array>();
+    this._infoBufferList = new Array<Float32Array>();
     this.ConvertObjectToNative(mappingInfoList);
   }
 
   public ConvertObjectToNative(
-    infoList: csmVector<CubismMotionSyncEngineMappingInfo>
+    infoList: Array<CubismMotionSyncEngineMappingInfo>
   ): void {
-    const infoListCount: number = infoList.getSize();
+    const infoListCount: number = infoList.length;
 
     for (let index = 0; index < infoListCount; index++) {
-      this._infoBufferList.pushBack(infoList.at(index).toNativeArray(true));
+      this._infoBufferList.push(infoList[index].toNativeArray(true));
     }
 
     // メモリ確保
     let mappingInfoListPtr = ToPointer.Malloc(
-      this._infoBufferList.at(0).length *
+      this._infoBufferList[0].length *
         infoListCount *
-        this._infoBufferList.at(0).BYTES_PER_ELEMENT
+        this._infoBufferList[0].BYTES_PER_ELEMENT
     );
     // 先頭アドレスを保存
     this._mappingInfoListFirstPtr = mappingInfoListPtr;
@@ -82,13 +81,13 @@ export class MappingInfoListMapper {
           ToPointer.AddValuePtrFloat(
             mappingInfoListPtr,
             infoElementIndex * Float32Array.BYTES_PER_ELEMENT,
-            this._infoBufferList.at(infoListIndex)[infoElementIndex]
+            this._infoBufferList[infoListIndex][infoElementIndex]
           );
         } else {
           ToPointer.AddValuePtrInt32(
             mappingInfoListPtr,
             infoElementIndex * Float32Array.BYTES_PER_ELEMENT,
-            this._infoBufferList.at(infoListIndex)[infoElementIndex]
+            this._infoBufferList[infoListIndex][infoElementIndex]
           );
         }
       }
@@ -103,7 +102,7 @@ export class MappingInfoListMapper {
       return;
     }
 
-    this._infoBufferList.clear();
+    this._infoBufferList.length = 0;
     this._infoBufferList = void 0;
     this._infoBufferList = null;
   }
@@ -112,7 +111,7 @@ export class MappingInfoListMapper {
     return this._mappingInfoListFirstPtr;
   }
 
-  private _infoBufferList: csmVector<Float32Array>;
+  private _infoBufferList: Array<Float32Array>;
   private _mappingInfoListFirstPtr: number;
 }
 

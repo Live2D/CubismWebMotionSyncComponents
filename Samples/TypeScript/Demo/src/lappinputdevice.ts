@@ -5,8 +5,6 @@
  * that can be found at https://www.live2d.com/eula/live2d-open-software-license-agreement_en.html.
  */
 
-import { csmVector } from '@framework/type/csmvector';
-
 import { LAppResponseObject } from './lappmotionsyncaudiomanager';
 import { CubismLogError } from '@framework/utils/cubismdebug';
 import { ILAppAudioBufferProvider } from './lappiaudiobufferprovider';
@@ -42,14 +40,14 @@ class AudioBuffer {
     }
   }
 
-  public toVector(): csmVector<number> {
-    const result = new csmVector<number>(this._size);
+  public toVector(): Array<number> {
+    const result = new Array<number>();
     let p: number = this._head - this._size;
     if (p < 0) {
       p += this._buffer.length;
     }
     for (let i = 0; i < this._size; i++) {
-      result.pushBack(this._buffer[p]);
+      result.push(this._buffer[p]);
       p++;
       if (p >= this._buffer.length) {
         p = 0;
@@ -156,7 +154,7 @@ export class LAppInputDevice implements ILAppAudioBufferProvider {
     return true;
   }
 
-  public getBuffer(): csmVector<number> {
+  public getBuffer(): Array<number> {
     return this._buffer.toVector();
   }
 

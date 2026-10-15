@@ -5,13 +5,12 @@
  * that can be found at https://www.live2d.com/eula/live2d-open-software-license-agreement_en.html.
  */
 
-import { csmVector } from '@framework/type/csmvector';
+import { LAppMotionSyncModel } from './lappmotionsyncmodel';
 import { CubismMotionSync } from '@motionsyncframework/live2dcubismmotionsync';
 import {
   AudioInfo,
   LAppMotionSyncAudioManager
 } from './lappmotionsyncaudiomanager';
-import { LAppMotionSyncModel } from './lappmotionsyncmodel';
 
 export class LAppAudioManager {
   /**
@@ -39,9 +38,7 @@ export class LAppAudioManager {
           model: LAppMotionSyncModel,
           motionSync: CubismMotionSync
         ): void => {
-          this._soundBufferContext
-            .getBuffers()
-            .set(index, new csmVector<number>());
+          this._soundBufferContext.getBuffers()[index] = new Array<number>();
         }
       );
   }
@@ -58,17 +55,13 @@ export class LAppAudioManager {
    * @param size 削除する大きさ
    * @returns 変更後のバッファ
    */
-  public spliceBegin(
-    buffer: csmVector<number>,
-    size: number
-  ): csmVector<number> {
-    if (!buffer?.begin() || buffer?._size <= size) {
+  public spliceBegin(buffer: Array<number>, size: number): Array<number> {
+    if (buffer.length <= size) {
       return buffer; // 削除範囲外
     }
 
     // 削除
-    buffer._ptr.splice(0, size);
-    buffer._size -= size;
+    buffer.splice(0, size);
 
     return buffer;
   }
@@ -80,9 +73,9 @@ export class LAppAudioManager {
    * @param size 削除するデータの要素数
    */
   public removeDataArrayByIndex(index: number, size: number) {
-    let buffer = this._soundBufferContext.getBuffers().at(index);
+    let buffer = this._soundBufferContext.getBuffers()[index];
 
-    if (size < buffer.getSize()) {
+    if (size < buffer.length) {
       // 途中からのバッファにする
       buffer = this.spliceBegin(buffer, size);
     }
@@ -95,9 +88,9 @@ export class LAppAudioManager {
    * @returns 音声コンテキストが待機状態になっているか？
    */
   public isSuspendedContextByIndex(index: number): boolean {
-    const audioContext = this.getSoundBufferContext()
-      .getAudioManager()
-      ._audios.at(index).audioContext;
+    const audioContext =
+      this.getSoundBufferContext().getAudioManager()._audios[index]
+        .audioContext;
 
     return audioContext.state == 'suspended';
   }
@@ -112,9 +105,9 @@ export class LAppAudioManager {
       return;
     }
 
-    const audioContext = this.getSoundBufferContext()
-      .getAudioManager()
-      ._audios.at(index).audioContext;
+    const audioContext =
+      this.getSoundBufferContext().getAudioManager()._audios[index]
+        .audioContext;
 
     // まだ待機状態だったらrunningにする
     if (this.isSuspendedContextByIndex(index)) {
@@ -139,8 +132,8 @@ export class LAppAudioManager {
     this._soundBufferContext.getAudioManager().stopByIndex(index);
 
     // バッファの中身をクリアする。
-    const buffer = this._soundBufferContext.getBuffers().at(index);
-    buffer.clear();
+    const buffer = this._soundBufferContext.getBuffers()[index];
+    buffer.length = 0;
   }
 
   /**
@@ -172,7 +165,7 @@ export class LAppAudioManager {
 }
 
 export class SoundBufferContext {
-  public getBuffers(): csmVector<csmVector<number>> {
+  public getBuffers(): Array<Array<number>> {
     return this._buffers;
   }
 
@@ -181,10 +174,10 @@ export class SoundBufferContext {
   }
 
   public constructor(
-    buffers?: csmVector<csmVector<number>>,
+    buffers?: Array<Array<number>>,
     audioManager?: LAppMotionSyncAudioManager
   ) {
-    this._buffers = buffers ? buffers : new csmVector<csmVector<number>>();
+    this._buffers = buffers ? buffers : new Array<Array<number>>();
     this._audioManager = audioManager
       ? audioManager
       : new LAppMotionSyncAudioManager();
@@ -192,7 +185,7 @@ export class SoundBufferContext {
 
   public release() {
     if (this._buffers != null) {
-      this._buffers.clear();
+      this._buffers.length = 0;
       this._buffers = void 0;
     }
 
@@ -202,6 +195,6 @@ export class SoundBufferContext {
     }
   }
 
-  private _buffers: csmVector<csmVector<number>>;
+  private _buffers: Array<Array<number>>;
   private _audioManager: LAppMotionSyncAudioManager;
 }

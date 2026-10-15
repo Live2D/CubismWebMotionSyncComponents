@@ -5,8 +5,6 @@
  * that can be found at https://www.live2d.com/eula/live2d-open-software-license-agreement_en.html.
  */
 
-import { csmString } from '@framework/type/csmstring';
-import { csmVector } from '@framework/type/csmvector';
 import { CubismLogError, CubismLogWarning } from '@framework/utils/cubismdebug';
 import ToPointer = Live2DCubismMotionSyncCore.ToPointer;
 
@@ -14,21 +12,21 @@ export const MappingInfoStructSize = 6;
 
 export class CubismMotionSyncEngineMappingInfo {
   public constructor(
-    audioParameterId: csmString,
-    modelParameterIds: csmVector<csmString>,
-    modelParameterValues: csmVector<number>,
+    audioParameterId: string,
+    modelParameterIds: Array<string>,
+    modelParameterValues: Array<number>,
     scale: number,
     enabled: boolean
   ) {
-    if (audioParameterId.getLength() == 0) {
+    if (audioParameterId.length == 0) {
       CubismLogError('The audio parameter ID is null.');
     }
-    if (modelParameterIds.getSize() == 0) {
+    if (modelParameterIds.length == 0) {
       CubismLogError(
         'The array length of IDs differs from the array length of parameter values. Please make them the same'
       );
     }
-    if (modelParameterValues.getSize() == 0) {
+    if (modelParameterValues.length == 0) {
       CubismLogError(
         'The model parameter ID array or the model parameter value array length is 0.'
       );
@@ -60,32 +58,14 @@ export class CubismMotionSyncEngineMappingInfo {
       this._nativeArray.length * this._nativeArray.BYTES_PER_ELEMENT
     );
 
-    const mappingInfoModelParameterIds = new Array<string>();
-    const mappingInfoModelParameterValues = new Array<number>();
-    for (
-      let mappingInfoIndex = 0;
-      mappingInfoIndex < this._modelParameterIds.getSize();
-      mappingInfoIndex++
-    ) {
-      // 直接 csmStringとstringは変換できないので一度確保する
-      mappingInfoModelParameterIds.push(
-        this._modelParameterIds.at(mappingInfoIndex).s
-      );
-
-      // 事故防止のためIds同様に一度確保する
-      mappingInfoModelParameterValues.push(
-        this._modelParameterValues.at(mappingInfoIndex)
-      );
-    }
-
     // Nativeポインタへの変換
     this._nativeArray = ToPointer.ConvertMappingInfoCriToFloat32Array(
       this._nativeArray,
       this._nativeArrayPtr,
-      this._audioParameterId.s,
-      mappingInfoModelParameterIds,
-      mappingInfoModelParameterValues,
-      this._modelParameterIds.getSize(),
+      this._audioParameterId,
+      this._modelParameterIds,
+      this._modelParameterValues,
+      this._modelParameterIds.length,
       this._scale,
       this._enabled
     );
@@ -98,15 +78,15 @@ export class CubismMotionSyncEngineMappingInfo {
     this._nativeArray = void 0;
   }
 
-  public getAudioParameterId(): csmString {
+  public getAudioParameterId(): string {
     return this._audioParameterId;
   }
 
-  public getModelParameterIds(): csmVector<csmString> {
+  public getModelParameterIds(): Array<string> {
     return this._modelParameterIds;
   }
 
-  public getModelParameterValues(): csmVector<number> {
+  public getModelParameterValues(): Array<number> {
     return this._modelParameterValues;
   }
 
@@ -129,9 +109,9 @@ export class CubismMotionSyncEngineMappingInfo {
     this._nativeArrayPtr = 0;
   }
 
-  private _audioParameterId: csmString;
-  private _modelParameterIds: csmVector<csmString>;
-  private _modelParameterValues: csmVector<number>;
+  private _audioParameterId: string;
+  private _modelParameterIds: Array<string>;
+  private _modelParameterValues: Array<number>;
   private _scale: number;
   private _enabled: number;
   private _nativeArray: Float32Array;

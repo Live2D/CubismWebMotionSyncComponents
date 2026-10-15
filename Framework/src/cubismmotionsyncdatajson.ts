@@ -6,8 +6,6 @@
  */
 
 import { CubismJson, JsonMap } from '@framework/utils/cubismjson';
-import { csmVector } from '@framework/type/csmvector';
-import { csmString } from '@framework/type/csmstring';
 import { CubismLogWarning } from '@framework/utils/cubismdebug';
 import { EngineType } from './cubismmotionsyncutil';
 import { CubismMotionSync } from './live2dcubismmotionsync';
@@ -90,10 +88,10 @@ export class CubismMotionSyncDataJson {
     meta = new CubismMotionSyncDataMeta();
 
     meta.settingCount = this.getSettingCount();
-    meta.dictionary = new csmVector<CubismMotionSyncDataMetaDictionary>();
+    meta.dictionary = new Array<CubismMotionSyncDataMetaDictionary>();
 
     for (let index = 0; index < meta.settingCount; index++) {
-      meta.dictionary.pushBack(this.getMetaDictionaryItem(index));
+      meta.dictionary.push(this.getMetaDictionaryItem(index));
     }
 
     return meta;
@@ -109,8 +107,8 @@ export class CubismMotionSyncDataJson {
   ): CubismMotionSyncDataMetaDictionary {
     const dictionary: CubismMotionSyncDataMetaDictionary =
       new CubismMotionSyncDataMetaDictionary();
-    dictionary.id = new csmString(this.getIdFromMeta(index));
-    dictionary.name = new csmString(this.getName(index));
+    dictionary.id = this.getIdFromMeta(index);
+    dictionary.name = this.getName(index);
 
     return dictionary;
   }
@@ -169,7 +167,7 @@ export class CubismMotionSyncDataJson {
       new CubismMotionSyncDataSetting();
 
     // Id
-    setting.id = new csmString(this.getIdFromSettings(settingIndex));
+    setting.id = this.getIdFromSettings(settingIndex);
 
     // AnalysisType
     const analysisType: string = this.getAnalysisType(settingIndex);
@@ -204,9 +202,9 @@ export class CubismMotionSyncDataJson {
       .getSize();
 
     setting.cubismParameterList =
-      new csmVector<CubismMotionSyncDataCubismParameter>();
+      new Array<CubismMotionSyncDataCubismParameter>();
     for (let index = 0; index < cubismParametarsCount; index++) {
-      setting.cubismParameterList.pushBack(
+      setting.cubismParameterList.push(
         this.getCubismParametarsElement(settingIndex, index)
       );
     }
@@ -220,17 +218,17 @@ export class CubismMotionSyncDataJson {
       .getSize();
 
     setting.audioParameterList =
-      new csmVector<CubismMotionSyncDataAudioParameter>();
+      new Array<CubismMotionSyncDataAudioParameter>();
     for (let index = 0; index < audioParametersCount; index++) {
-      setting.audioParameterList.pushBack(
+      setting.audioParameterList.push(
         this.getAudioParametersElement(settingIndex, index)
       );
     }
 
     // Mappings
-    setting.mappingList = new csmVector<CubismMotionSyncDataMapping>();
+    setting.mappingList = new Array<CubismMotionSyncDataMapping>();
     for (let index = 0; index < audioParametersCount; index++) {
-      setting.mappingList.pushBack(
+      setting.mappingList.push(
         this.getMappingsElement(settingIndex, index, cubismParametarsCount)
       );
     }
@@ -299,11 +297,13 @@ export class CubismMotionSyncDataJson {
   ): CubismMotionSyncDataCubismParameter {
     const cubismParametar: CubismMotionSyncDataCubismParameter =
       new CubismMotionSyncDataCubismParameter();
-    cubismParametar.name = new csmString(
-      this.getNameFromCubismParameters(settingIndex, elementIndex)
+    cubismParametar.name = this.getNameFromCubismParameters(
+      settingIndex,
+      elementIndex
     );
-    cubismParametar.id = new csmString(
-      this.getIdFromCubismParameters(settingIndex, elementIndex)
+    cubismParametar.id = this.getIdFromCubismParameters(
+      settingIndex,
+      elementIndex
     );
     cubismParametar.min = this.getMinFromCubismParameters(
       settingIndex,
@@ -459,11 +459,13 @@ export class CubismMotionSyncDataJson {
   ): CubismMotionSyncDataAudioParameter {
     const audioParameter: CubismMotionSyncDataAudioParameter =
       new CubismMotionSyncDataAudioParameter();
-    audioParameter.name = new csmString(
-      this.getNameFromAudioParameters(settingIndex, elementIndex)
+    audioParameter.name = this.getNameFromAudioParameters(
+      settingIndex,
+      elementIndex
     );
-    audioParameter.id = new csmString(
-      this.getIdFromAudioParameters(settingIndex, elementIndex)
+    audioParameter.id = this.getIdFromAudioParameters(
+      settingIndex,
+      elementIndex
     );
     audioParameter.min = this.getMinFromAudioParameters(
       settingIndex,
@@ -632,14 +634,15 @@ export class CubismMotionSyncDataJson {
         break;
     }
 
-    mapping.audioId = new csmString(
-      this.getAudioParamIdFromMappings(settingIndex, elementIndex)
+    mapping.audioId = this.getAudioParamIdFromMappings(
+      settingIndex,
+      elementIndex
     );
 
-    mapping.targetList = new csmVector<CubismMotionSyncDataMappingTarget>();
+    mapping.targetList = new Array<CubismMotionSyncDataMappingTarget>();
 
     for (let targetIndex = 0; targetIndex < targetCount; targetIndex++) {
-      mapping.targetList.pushBack(
+      mapping.targetList.push(
         this.getMappingTargetsElement(settingIndex, elementIndex, targetIndex)
       );
     }
@@ -661,8 +664,10 @@ export class CubismMotionSyncDataJson {
   ): CubismMotionSyncDataMappingTarget {
     const target: CubismMotionSyncDataMappingTarget =
       new CubismMotionSyncDataMappingTarget();
-    target.id = new csmString(
-      this.getCubismIdFromMappingTarget(settingIndex, mappingIndex, targetIndex)
+    target.id = this.getCubismIdFromMappingTarget(
+      settingIndex,
+      mappingIndex,
+      targetIndex
     );
     target.value = this.getValueFromMappingTarget(
       settingIndex,

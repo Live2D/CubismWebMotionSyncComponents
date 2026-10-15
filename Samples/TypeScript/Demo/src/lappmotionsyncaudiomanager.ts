@@ -5,12 +5,11 @@
  * that can be found at https://www.live2d.com/eula/live2d-open-software-license-agreement_en.html.
  */
 
-import { csmVector, iterator } from '@framework/type/csmvector';
 import * as LAppMotionSyncDefine from './lappmotionsyncdefine';
 import { CubismMotionSync } from '@motionsyncframework/live2dcubismmotionsync';
-import { LAppMotionSyncModel } from './lappmotionsyncmodel';
 import { LAppWavFileHandler } from '@cubismsdksamples/lappwavfilehandler';
 import { CubismLogError } from '@framework/utils/cubismdebug';
+import { LAppMotionSyncModel } from './lappmotionsyncmodel';
 
 /**
  * WorkletProcessorモジュール用の型定義
@@ -29,28 +28,16 @@ export class LAppMotionSyncAudioManager {
    * コンストラクタ
    */
   constructor() {
-    this._audios = new csmVector<AudioInfo>();
+    this._audios = new Array<AudioInfo>();
   }
 
   /**
    * 解放する。
    */
   public release(): void {
-    for (
-      let ite: iterator<AudioInfo> = this._audios.begin();
-      ite.notEqual(this._audios.end());
-      ite.preIncrement()
-    ) {
-      if (!ite.ptr()) {
-        continue;
-      }
-
-      if (ite.ptr().source) {
-        ite.ptr().source.disconnect();
-      }
-      if (ite.ptr().audioContext) {
-        ite.ptr().audioContext.close();
-      }
+    for (let i = 0; i < this._audios.length; i++) {
+      this._audios[i]?.source?.disconnect();
+      this._audios[i]?.audioContext?.close();
     }
     this._audios = null;
   }
@@ -75,33 +62,27 @@ export class LAppMotionSyncAudioManager {
       motionSync: CubismMotionSync
     ) => void
   ): void {
-    if (this._audios && this._audios.at(index) != null) {
+    if (this._audios && this._audios[index] != null) {
       // search loaded audio already
-      for (
-        let ite: iterator<AudioInfo> = this._audios.begin();
-        ite.notEqual(this._audios.end());
-        ite.preIncrement()
-      ) {
+      for (let i = 0; i < this._audios.length; i++) {
         if (
-          ite.ptr().filePath == fileName &&
-          ite.ptr().audioContext == audioContext &&
+          this._audios[i].filePath == fileName &&
+          this._audios[i].audioContext == audioContext &&
           audioContext != null
         ) {
           // 2回目以降はキャッシュが使用される(待ち時間なし)
           // WebKitでは同じImageのonloadを再度呼ぶには再インスタンスが必要
           // 詳細：https://stackoverflow.com/a/5024181
-          ite.ptr().audio = new Audio();
-          ite
-            .ptr()
-            .audio.addEventListener(
-              'load',
-              (): void => callback(ite.ptr(), index, model, motionSync),
-              {
-                passive: true
-              }
-            );
-          ite.ptr().audio.src = fileName;
-          ite.ptr().audioContext = audioContext;
+          this._audios[i].audio = new Audio();
+          this._audios[i].audio.addEventListener(
+            'load',
+            (): void => callback(this._audios[i], index, model, motionSync),
+            {
+              passive: true
+            }
+          );
+          this._audios[i].audio.src = fileName;
+          this._audios[i].audioContext = audioContext;
           return;
         }
       }
@@ -148,7 +129,7 @@ export class LAppMotionSyncAudioManager {
         }
         audioInfo.wavhandler = wavhandler;
         audioInfo.audioSamples = audioInfo.wavhandler.getPcmDataChannel(0);
-        this._audios.set(index, audioInfo);
+        this._audios[index] = audioInfo;
 
         callback(audioInfo, index, model, motionSync);
       });
@@ -171,13 +152,13 @@ export class LAppMotionSyncAudioManager {
    * 配列に存在する音声全てを解放する。
    */
   public clearAudios(): void {
-    for (let i = 0; i < this._audios.getSize(); i++) {
-      this._audios.at(i).source.disconnect();
-      this._audios.at(i).audioContext.close();
-      this._audios.set(i, null);
+    for (let i = 0; i < this._audios.length; i++) {
+      this._audios[i].source.disconnect();
+      this._audios[i].audioContext.close();
+      this._audios[i] = null;
     }
 
-    this._audios.clear();
+    this._audios.length = 0;
   }
 
   /**
@@ -187,14 +168,14 @@ export class LAppMotionSyncAudioManager {
    * @param audioContext 解放する音声コンテキスト
    */
   public releaseAudioByAudioContext(audioContext: AudioContext): void {
-    for (let i = 0; i < this._audios.getSize(); i++) {
-      if (this._audios.at(i).audioContext != audioContext) {
+    for (let i = 0; i < this._audios.length; i++) {
+      if (this._audios[i].audioContext != audioContext) {
         continue;
       }
-      this._audios.at(i).source.disconnect();
-      this._audios.at(i).audioContext.close();
-      this._audios.set(i, null);
-      this._audios.remove(i);
+      this._audios[i].source.disconnect();
+      this._audios[i].audioContext.close();
+      this._audios[i] = null;
+      this._audios.splice(i, 1);
       break;
     }
   }
@@ -206,14 +187,14 @@ export class LAppMotionSyncAudioManager {
    * @param fileName 解放する音声ファイルパス
    */
   public releaseAudioByFilePath(fileName: string): void {
-    for (let i = 0; i < this._audios.getSize(); i++) {
-      if (this._audios.at(i).filePath != fileName) {
+    for (let i = 0; i < this._audios.length; i++) {
+      if (this._audios[i].filePath != fileName) {
         continue;
       }
-      this._audios.at(i).source.disconnect();
-      this._audios.at(i).audioContext.close();
-      this._audios.set(i, null);
-      this._audios.remove(i);
+      this._audios[i].source.disconnect();
+      this._audios[i].audioContext.close();
+      this._audios[i] = null;
+      this._audios.splice(i, 1);
       break;
     }
   }
@@ -225,8 +206,8 @@ export class LAppMotionSyncAudioManager {
    * @returns 指定した名前の音声が再生中か？
    */
   public isPlayByFilePath(filePath: string): boolean {
-    for (let i = 0; i < this._audios.getSize(); i++) {
-      if (this._audios.at(i).filePath != filePath) {
+    for (let i = 0; i < this._audios.length; i++) {
+      if (this._audios[i].filePath != filePath) {
         continue;
       }
 
@@ -242,8 +223,8 @@ export class LAppMotionSyncAudioManager {
    * @param filePath 音声ファイルパス
    */
   public playByFilePath(filePath: string): void {
-    for (let i = 0; i < this._audios.getSize(); i++) {
-      if (this._audios.at(i).filePath != filePath) {
+    for (let i = 0; i < this._audios.length; i++) {
+      if (this._audios[i].filePath != filePath) {
         continue;
       }
 
@@ -258,8 +239,8 @@ export class LAppMotionSyncAudioManager {
    * @param filePath 音声ファイルパス
    */
   public stopByFilePath(filePath: string): void {
-    for (let i = 0; i < this._audios.getSize(); i++) {
-      if (this._audios.at(i).filePath != filePath) {
+    for (let i = 0; i < this._audios.length; i++) {
+      if (this._audios[i].filePath != filePath) {
         continue;
       }
 
@@ -274,8 +255,8 @@ export class LAppMotionSyncAudioManager {
    * @param filePath 音声ファイルパス
    */
   public pauseByFilePath(filePath: string): void {
-    for (let i = 0; i < this._audios.getSize(); i++) {
-      if (this._audios.at(i).filePath != filePath) {
+    for (let i = 0; i < this._audios.length; i++) {
+      if (this._audios[i].filePath != filePath) {
         continue;
       }
 
@@ -293,13 +274,13 @@ export class LAppMotionSyncAudioManager {
   public isPlayByIndex(index: number): boolean {
     if (
       this._audios == null ||
-      !(index < this._audios.getSize()) ||
-      this._audios.at(index) == null
+      !(index < this._audios.length) ||
+      this._audios[index] == null
     ) {
       return false;
     }
 
-    return this._audios.at(index).isPlay;
+    return this._audios[index].isPlay;
   }
 
   /**
@@ -308,11 +289,11 @@ export class LAppMotionSyncAudioManager {
    * @param index インデックス
    */
   public playByIndex(index: number): void {
-    if (!(index < this._audios.getSize()) || this._audios.at(index) == null) {
+    if (!(index < this._audios.length) || this._audios[index] == null) {
       return;
     }
 
-    const audioInfo = this._audios.at(index);
+    const audioInfo = this._audios[index];
 
     audioInfo.audio.play().then(() => {
       audioInfo.isPlay = true;
@@ -335,11 +316,11 @@ export class LAppMotionSyncAudioManager {
    * @param index インデックス
    */
   public stopByIndex(index: number): void {
-    if (!(index < this._audios.getSize()) || this._audios.at(index) == null) {
+    if (!(index < this._audios.length) || this._audios[index] == null) {
       return;
     }
 
-    const audioInfo = this._audios.at(index);
+    const audioInfo = this._audios[index];
     audioInfo.audio.load();
     audioInfo.isPlay = false;
 
@@ -354,16 +335,16 @@ export class LAppMotionSyncAudioManager {
    * @param index インデックス
    */
   public pauseByIndex(index: number): void {
-    if (!(index < this._audios.getSize()) || this._audios.at(index) == null) {
+    if (!(index < this._audios.length) || this._audios[index] == null) {
       return;
     }
 
-    const audioInfo = this._audios.at(index);
+    const audioInfo = this._audios[index];
     audioInfo.audio.pause();
     audioInfo.isPlay = false;
   }
 
-  _audios: csmVector<AudioInfo>;
+  _audios: Array<AudioInfo>;
   _eBuffers: number[] = [];
 }
 
