@@ -22,16 +22,20 @@ class LAppAudioWorkletProcessor extends AudioWorkletProcessor {
     const audioBuffer = Float32Array.from([...input]);
 
     this.port.postMessage({
-      eventType: "data",
-      audioBuffer: audioBuffer,
+      eventType: 'data',
+      audioBuffer: audioBuffer
     });
 
     let inputArray = inputs[0];
     let output = outputs[0];
-    for (let currentChannel = 0; currentChannel < inputArray.length; ++currentChannel) {
+    for (
+      let currentChannel = 0;
+      currentChannel < inputArray.length;
+      ++currentChannel
+    ) {
       let inputChannel = inputArray[currentChannel];
       let outputChannel = output[currentChannel];
-      for (let i = 0; i < inputChannel.length; ++i){
+      for (let i = 0; i < inputChannel.length; ++i) {
         outputChannel[i] = inputChannel[i];
       }
     }

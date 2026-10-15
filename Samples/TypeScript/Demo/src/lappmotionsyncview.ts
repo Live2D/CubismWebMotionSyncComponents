@@ -144,8 +144,9 @@ export class LAppMotionSyncView {
       const x: number = width * 0.5;
       const y: number = height * 0.5;
 
-      const fwidth = textureInfo.width * 2.0;
       const fheight = height * 0.95;
+      const ratio = fheight / textureInfo.height;
+      const fwidth = textureInfo.width * ratio;
       this._back = new LAppMotionSyncSprite(
         x,
         y,
@@ -267,9 +268,9 @@ export class LAppMotionSyncView {
       lapplive2dmanager.nextScene();
     }
 
-    // 音声遷移にタップしたか
+    // モーション遷移にタップしたか
     if (this._fastForward.isHit(posX, posY)) {
-      lapplive2dmanager.changeNextIndexSound();
+      lapplive2dmanager.changeNextMotion();
     }
   }
 

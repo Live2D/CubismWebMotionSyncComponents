@@ -55,8 +55,8 @@ export class LAppMotionSyncDelegate extends LAppMotionSyncDelegateParent {
       // 時間更新
       LAppPal.updateTime();
 
-      for (let i = 0; i < this._subdelegates.getSize(); i++) {
-        this._subdelegates.at(i).update();
+      for (let i = 0; i < this._subdelegates.length; i++) {
+        this._subdelegates[i].update();
       }
 
       // すべてのSubdelegatesがバッファを受け取ったらバッファをクリア

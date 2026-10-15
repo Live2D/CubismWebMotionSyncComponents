@@ -5,8 +5,6 @@
  * that can be found at https://www.live2d.com/eula/live2d-open-software-license-agreement_en.html.
  */
 
-import { csmString } from '@framework/type/csmstring';
-import { csmVector } from '@framework/type/csmvector';
 import { CubismLogWarning } from '@framework/utils/cubismdebug';
 import { CubismModel } from '@framework/model/cubismmodel';
 import { EngineType } from './cubismmotionsyncutil';
@@ -62,15 +60,15 @@ export class CubismMotionSyncData {
     this._version = json.getVersion();
     this._meta = json.getMeta();
 
-    this._settings = new csmVector<CubismMotionSyncDataSetting>();
+    this._settings = new Array<CubismMotionSyncDataSetting>();
     for (let index = 0; index < this._meta.settingCount; index++) {
-      this._settings.pushBack(json.getSetting(index));
+      this._settings.push(json.getSetting(index));
     }
-    this._settingCount = this._settings.getSize();
+    this._settingCount = this._settings.length;
 
-    for (let index = 0; index < this._settings.getSize(); index++) {
-      const cubismParameterList = this._settings.at(index).cubismParameterList;
-      const parameterCount = cubismParameterList.getSize();
+    for (let index = 0; index < this._settings.length; index++) {
+      const cubismParameterList = this._settings[index].cubismParameterList;
+      const parameterCount = cubismParameterList.length;
 
       for (
         let cubismParameterIndex = 0;
@@ -87,19 +85,19 @@ export class CubismMotionSyncData {
           if (
             model
               .getParameterId(modelParameterIndex)
-              .isEqual(cubismParameterList.at(cubismParameterIndex).id)
+              .isEqual(cubismParameterList[cubismParameterIndex].id)
           ) {
             parameterIndex = modelParameterIndex;
             break;
           }
         }
-        cubismParameterList.at(cubismParameterIndex).parameterIndex =
+        cubismParameterList[cubismParameterIndex].parameterIndex =
           parameterIndex;
 
         if (parameterIndex < 0) {
           CubismLogWarning(
             `Failed to find parameter index for ${
-              cubismParameterList.at(cubismParameterIndex).id.s
+              cubismParameterList[cubismParameterIndex].id
             }`
           );
         }
@@ -132,7 +130,7 @@ export class CubismMotionSyncData {
   }
 
   public getSetting(index: number): CubismMotionSyncDataSetting {
-    return this._settings.at(index);
+    return this._settings[index];
   }
 
   public getSettingCount(): number {
@@ -141,54 +139,51 @@ export class CubismMotionSyncData {
 
   public getMappingInfoList(
     index: number
-  ): csmVector<CubismMotionSyncEngineMappingInfo> {
-    if (this._settings.getSize() <= index) {
+  ): Array<CubismMotionSyncEngineMappingInfo> {
+    if (this._settings.length <= index) {
       return null;
     }
-    const mappingInfoList: csmVector<CubismMotionSyncEngineMappingInfo> =
-      new csmVector<CubismMotionSyncEngineMappingInfo>();
+    const mappingInfoList: Array<CubismMotionSyncEngineMappingInfo> =
+      new Array<CubismMotionSyncEngineMappingInfo>();
 
     const setting = this.getSetting(index);
 
     for (
       let audioParamIndex = 0;
-      audioParamIndex < setting.audioParameterList.getSize();
+      audioParamIndex < setting.audioParameterList.length;
       audioParamIndex++
     ) {
-      const audioParamId: csmString =
-        setting.audioParameterList.at(audioParamIndex).id;
+      const audioParamId: string =
+        setting.audioParameterList[audioParamIndex].id;
 
-      const modelParamIds: csmVector<csmString> = new csmVector<csmString>();
-      const modelParamValues: csmVector<number> = new csmVector<number>();
+      const modelParamIds: Array<string> = new Array<string>();
+      const modelParamValues: Array<number> = new Array<number>();
 
       for (
         let serchIndex = 0;
-        serchIndex < setting.audioParameterList.getSize();
+        serchIndex < setting.audioParameterList.length;
         serchIndex++
       ) {
-        if (
-          audioParamId.isEqual(setting.mappingList.at(serchIndex).audioId.s)
-        ) {
+        if (audioParamId == setting.mappingList[serchIndex].audioId) {
           for (
             let cubismPramIndex = 0;
-            cubismPramIndex < setting.cubismParameterList.getSize();
+            cubismPramIndex < setting.cubismParameterList.length;
             cubismPramIndex++
           ) {
             const target: CubismMotionSyncDataMappingTarget =
-              setting.mappingList.at(serchIndex).targetList.at(cubismPramIndex);
-            modelParamIds.pushBack(target.id);
-            modelParamValues.pushBack(target.value);
+              setting.mappingList[serchIndex].targetList[cubismPramIndex];
+            modelParamIds.push(target.id);
+            modelParamValues.push(target.value);
           }
           break;
         }
       }
 
-      const scale: number =
-        setting.audioParameterList.at(audioParamIndex).scale;
+      const scale: number = setting.audioParameterList[audioParamIndex].scale;
       const enabled: boolean =
-        setting.audioParameterList.at(audioParamIndex).enabled;
+        setting.audioParameterList[audioParamIndex].enabled;
 
-      mappingInfoList.pushBack(
+      mappingInfoList.push(
         new CubismMotionSyncEngineMappingInfo(
           audioParamId,
           modelParamIds,
@@ -213,7 +208,7 @@ export class CubismMotionSyncData {
 
   private _version: number;
   private _meta: CubismMotionSyncDataMeta;
-  private _settings: csmVector<CubismMotionSyncDataSetting>;
+  private _settings: Array<CubismMotionSyncDataSetting>;
   private _settingCount: number;
 }
 
@@ -237,8 +232,8 @@ export enum CubismMotionSyncDataMappingType {
  * モーションシンク設定のIdと名称
  */
 export class CubismMotionSyncDataMetaDictionary {
-  public id: csmString;
-  public name: csmString;
+  public id: string;
+  public name: string;
 }
 
 /**
@@ -246,15 +241,15 @@ export class CubismMotionSyncDataMetaDictionary {
  */
 export class CubismMotionSyncDataMeta {
   public settingCount: number;
-  public dictionary: csmVector<CubismMotionSyncDataMetaDictionary>;
+  public dictionary: Array<CubismMotionSyncDataMetaDictionary>;
 }
 
 /**
  * CubismParametarsに登録されているCubismParametar
  */
 export class CubismMotionSyncDataCubismParameter {
-  public name: csmString;
-  public id: csmString;
+  public name: string;
+  public id: string;
   public min: number;
   public max: number;
   public damper: number;
@@ -266,8 +261,8 @@ export class CubismMotionSyncDataCubismParameter {
  * AudioParametersに登録されている音声の要素
  */
 export class CubismMotionSyncDataAudioParameter {
-  public name: csmString;
-  public id: csmString;
+  public name: string;
+  public id: string;
   public min: number;
   public max: number;
   public scale: number;
@@ -278,7 +273,7 @@ export class CubismMotionSyncDataAudioParameter {
  * マッピングのターゲット
  */
 export class CubismMotionSyncDataMappingTarget {
-  public id: csmString;
+  public id: string;
   public value: number;
 }
 
@@ -287,17 +282,17 @@ export class CubismMotionSyncDataMappingTarget {
  */
 export class CubismMotionSyncDataMapping {
   public type: CubismMotionSyncDataMappingType;
-  public audioId: csmString;
-  public targetList: csmVector<CubismMotionSyncDataMappingTarget>;
+  public audioId: string;
+  public targetList: Array<CubismMotionSyncDataMappingTarget>;
 }
 
 export class CubismMotionSyncDataSetting {
-  public id: csmString;
+  public id: string;
   public analysisType: EngineType;
   public useCase: CubismMotionSyncDataUseCase;
-  public cubismParameterList: csmVector<CubismMotionSyncDataCubismParameter>;
-  public audioParameterList: csmVector<CubismMotionSyncDataAudioParameter>;
-  public mappingList: csmVector<CubismMotionSyncDataMapping>;
+  public cubismParameterList: Array<CubismMotionSyncDataCubismParameter>;
+  public audioParameterList: Array<CubismMotionSyncDataAudioParameter>;
+  public mappingList: Array<CubismMotionSyncDataMapping>;
   public blendRatio: number;
   public smoothing: number;
   public sampleRate: number;

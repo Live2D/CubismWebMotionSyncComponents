@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 
+## [5-r.3] - 2026-10-15
+
+### Added
+
+* Add `CubismMotionSyncUpdater` class to support the functionality to change motion calculation order in `Cubism SDK for Web`.
+
+### Changed
+
+* Change the sample to perform motionsync during motion playback.
+* Update to follow the changes in `Cubism 5 SDK for Web R5`.
+* Replace standard `Array`, `Map`, and `String` with `csmVector`, `csmMap`, and `csmString`.
+
+### Fixed
+
+* Fix an issue where models without motion sync were not rendering.
+* Fix background image distortion when window size is changed.
+
+
 ## [5-r.2] - 2025-03-27
 
 ### Changed
@@ -80,6 +98,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 * New released!
 
 
+[5-r.3]: https://github.com/Live2D/CubismWebMotionSyncComponents/compare/5-r.2...5-r.3
 [5-r.2]: https://github.com/Live2D/CubismWebMotionSyncComponents/compare/5-r.1...5-r.2
 [5-r.1]: https://github.com/Live2D/CubismWebMotionSyncComponents/compare/5-r.1-beta.2...5-r.1
 [5-r.1-beta.2]: https://github.com/Live2D/CubismWebMotionSyncComponents/compare/5-r.1-beta.1...5-r.1-beta.2

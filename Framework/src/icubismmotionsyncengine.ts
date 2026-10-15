@@ -5,8 +5,6 @@
  * that can be found at https://www.live2d.com/eula/live2d-open-software-license-agreement_en.html.
  */
 
-import { csmVector } from '@framework/type/csmvector';
-import { csmString } from '@framework/type/csmstring';
 import { ICubismMotionSyncProcessor } from './icubismmotionsyncprocessor';
 import { CubismMotionSyncEngineLib } from './cubismmotionsyncenginelib';
 import { EngineType } from './cubismmotionsyncutil';
@@ -19,7 +17,7 @@ export abstract class ICubismMotionSyncEngine {
   public constructor(
     engineHandle: CubismMotionSyncEngineLib,
     type: EngineType,
-    name: csmString,
+    name: string,
     version: CubismMotionSyncEngineVersion
   ) {
     this._engineHandle = engineHandle;
@@ -32,7 +30,7 @@ export abstract class ICubismMotionSyncEngine {
     return this._type;
   }
 
-  public getName(): csmString {
+  public getName(): string {
     return this._name;
   }
 
@@ -44,7 +42,7 @@ export abstract class ICubismMotionSyncEngine {
     return this._engineHandle;
   }
 
-  public getProcessors(): csmVector<ICubismMotionSyncProcessor> {
+  public getProcessors(): Array<ICubismMotionSyncProcessor> {
     return this._processors;
   }
 
@@ -57,8 +55,8 @@ export abstract class ICubismMotionSyncEngine {
       return;
     }
 
-    for (let index = 0; index < this._processors.getSize(); index++) {
-      this._processors.at(index).Close();
+    for (let index = 0; index < this._processors.length; index++) {
+      this._processors[index].Close();
     }
   }
 
@@ -67,7 +65,7 @@ export abstract class ICubismMotionSyncEngine {
       return;
     }
 
-    if (0 < this._processors.getSize()) {
+    if (0 < this._processors.length) {
       if (isForce) {
         this.releaseAllProcessor();
       } else {
@@ -82,19 +80,19 @@ export abstract class ICubismMotionSyncEngine {
   }
 
   public DeleteAssociation(processor: ICubismMotionSyncProcessor): void {
-    for (let index = 0; index < this._processors.getSize(); index++) {
-      if (this._processors.at(index) == processor) {
-        this._processors.at(index).Close();
-        this._processors.remove(index);
+    for (let index = 0; index < this._processors.length; index++) {
+      if (this._processors[index] == processor) {
+        this._processors[index].Close();
+        this._processors.splice(index, 1);
         break;
       }
     }
   }
 
-  protected _processors: csmVector<ICubismMotionSyncProcessor>;
+  protected _processors: Array<ICubismMotionSyncProcessor>;
   private _engineHandle: CubismMotionSyncEngineLib;
   private _type: EngineType;
-  private _name: csmString;
+  private _name: string;
   private _version: CubismMotionSyncEngineVersion;
 }
 

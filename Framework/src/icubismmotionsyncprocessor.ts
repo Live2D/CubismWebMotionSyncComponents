@@ -5,7 +5,6 @@
  * that can be found at https://www.live2d.com/eula/live2d-open-software-license-agreement_en.html.
  */
 
-import { csmVector } from '@framework/type/csmvector';
 import { CubismMotionSyncEngineAnalysisResult } from './cubismmotionsyncengineanalysisresult';
 import { CubismMotionSyncEngineMappingInfo } from './cubismmotionsyncenginemappinginfo';
 import { EngineType, MotionSyncContext } from './cubismmotionsyncutil';
@@ -16,12 +15,12 @@ export abstract class ICubismMotionSyncProcessor {
    * createAnalysisResult
    */
   public createAnalysisResult(): CubismMotionSyncEngineAnalysisResult {
-    if (this.isClosed() || this._mappingInfoArray.getSize() < 1) {
+    if (this.isClosed() || this._mappingInfoArray.length < 1) {
       return new CubismMotionSyncEngineAnalysisResult(0);
     }
 
     return new CubismMotionSyncEngineAnalysisResult(
-      this._mappingInfoArray.at(0).getModelParameterValues().getSize()
+      this._mappingInfoArray[0].getModelParameterValues().length
     );
   }
 
@@ -70,7 +69,7 @@ export abstract class ICubismMotionSyncProcessor {
   public constructor(
     engine: ICubismMotionSyncEngine,
     contextHandle: MotionSyncContext,
-    mappingList: csmVector<CubismMotionSyncEngineMappingInfo>
+    mappingList: Array<CubismMotionSyncEngineMappingInfo>
   ) {
     this._engine = engine;
     this._contextHandle = contextHandle;
@@ -79,7 +78,7 @@ export abstract class ICubismMotionSyncProcessor {
 
   private _engine: ICubismMotionSyncEngine;
   private _contextHandle: MotionSyncContext;
-  private _mappingInfoArray: csmVector<CubismMotionSyncEngineMappingInfo>;
+  private _mappingInfoArray: Array<CubismMotionSyncEngineMappingInfo>;
 }
 
 // Namespace definition for compatibility.

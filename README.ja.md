@@ -146,34 +146,34 @@ NOTE: デバック用の設定は、`.vscode/launch.json` に記述していま�
 
 ### Node.js
 
-* 23.10.0
-* 22.14.0
+* 26.9.0
+* 24.21.0
 
 
 ## 動作確認環境
 
 | プラットフォーム | ブラウザ | バージョン |
 | --- | --- | --- |
-| Android | Google Chrome | 134.0.6998.96 |
+| Android | Google Chrome | 153.0.8010.47 |
 | Android | Microsoft Edge | 124.0.2478.104 |
 | Android | Mozilla Firefox | 126.0 |
 | iOS / iPadOS | Google Chrome | 125.0.6422.80 |
 | iOS / iPadOS | Microsoft Edge | 125.0.2535.60 |
 | iOS / iPadOS | Mozilla Firefox | 126.1 |
-| iOS / iPadOS | Safari | 18.3.2 |
+| iOS / iPadOS | Safari | 26.7 |
 | macOS | Google Chrome | 125.0.6422.113 |
 | macOS | Microsoft Edge | 125.0.2535.67 |
 | macOS | Mozilla Firefox | 126.0 |
-| macOS | Safari | 18.3.1 |
-| Windows | Google Chrome | 134.0.6998.119 |
-| Windows | Microsoft Edge | 134.0.3124.83 |
-| Windows | Mozilla Firefox | 136.0.2 |
+| macOS | Safari | 26.7 |
+| Windows | Google Chrome | 153.0.8010.48 |
+| Windows | Microsoft Edge | 153.0.4234.32 |
+| Windows | Mozilla Firefox | 156.0 |
 
 Note: 動作確認時のサーバの起動は `./Samples/TypeScript/Demo/package.json` の `serve-https` スクリプトを使用して行っています。
 
 ### Cubism SDK for Web
 
-[Cubism 5 SDK for Web R3](https://github.com/Live2D/CubismWebSamples/releases/tag/5-r.3)
+[Cubism 5 SDK for Web R5](https://github.com/Live2D/CubismWebSamples/releases/tag/5-r.5)
 
 ## サウンドデバイス
 

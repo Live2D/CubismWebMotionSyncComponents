@@ -5,9 +5,7 @@
  * that can be found at https://www.live2d.com/eula/live2d-open-software-license-agreement_en.html.
  */
 
-import { csmVector } from '@framework/type/csmvector';
 import { CubismLogWarning } from '@framework/utils/cubismdebug';
-import { csmString } from '@framework/type/csmstring';
 import { CubismMotionSyncEngineVersion } from './cubismmotionsyncengineversion';
 import {
   CubismMotionSyncContext,
@@ -33,7 +31,7 @@ export const SampleRateMax: number = 128000;
 export class CubismMotionSyncEngineCri extends ICubismMotionSyncEngine {
   public CreateProcessor(
     cubismParameterCount: number,
-    mappingInfoList: csmVector<CubismMotionSyncEngineMappingInfo>,
+    mappingInfoList: Array<CubismMotionSyncEngineMappingInfo>,
     sampleRate: number
   ): CubismMotionSyncProcessorCRI {
     if (this.isClosed()) {
@@ -43,7 +41,7 @@ export class CubismMotionSyncEngineCri extends ICubismMotionSyncEngine {
       return null;
     }
 
-    if (mappingInfoList.getSize() < 1) {
+    if (mappingInfoList.length < 1) {
       CubismLogWarning(
         "[CubismMotionSyncEngineCri.CreateProcessor] mappingInfoList size is invalid.'"
       );
@@ -67,7 +65,7 @@ export class CubismMotionSyncEngineCri extends ICubismMotionSyncEngine {
         this.getType(),
         contextConfig,
         mapper,
-        mappingInfoList.getSize()
+        mappingInfoList.length
       );
     const contextHandle: MotionSyncContext = new MotionSyncContext(
       context,
@@ -82,7 +80,7 @@ export class CubismMotionSyncEngineCri extends ICubismMotionSyncEngine {
         sampleRate,
         DefaultAudioBitDepth
       );
-    this._processors.pushBack(processor);
+    this._processors.push(processor);
 
     return processor;
   }
@@ -90,14 +88,14 @@ export class CubismMotionSyncEngineCri extends ICubismMotionSyncEngine {
   public constructor(
     engineHandle: CubismMotionSyncEngineLib,
     type: EngineType,
-    name: csmString,
+    name: string,
     version: CubismMotionSyncEngineVersion
   ) {
     super(engineHandle, type, name, version);
-    this._processors = new csmVector<ICubismMotionSyncProcessor>();
+    this._processors = new Array<ICubismMotionSyncProcessor>();
   }
 
-  protected _processors: csmVector<ICubismMotionSyncProcessor>;
+  protected _processors: Array<ICubismMotionSyncProcessor>;
 }
 
 // Namespace definition for compatibility.
